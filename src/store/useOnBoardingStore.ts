@@ -1,0 +1,80 @@
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+interface FixedExpense {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+interface OnboardingState {
+  fullName: string;
+  dateOfBirth: string;
+  currency: string;
+  upiId: string;
+
+  currentBalance: number;
+  monthlyIncome: number;
+  secondaryIncome: number;
+
+  fixedExpenses: FixedExpense[];
+
+  savingsTarget: number;
+  emergencyFundGoal: number;
+  overrideDailyLimit: number | null;
+
+  setField: (field: string, value: any) => void;
+  addExpense: (expense: FixedExpense) => void;
+  removeExpense: (id: string) => void;
+}
+
+export const useOnBoardingStore =
+  create<OnboardingState>()(
+    persist(
+      (set) => ({
+        fullName: "",
+        dateOfBirth: "",
+        currency: "INR",
+        upiId: "",
+
+        currentBalance: 0,
+        monthlyIncome: 0,
+        secondaryIncome: 0,
+
+        fixedExpenses: [],
+
+        savingsTarget: 0,
+        emergencyFundGoal: 0,
+        overrideDailyLimit: null,
+
+        setField: (field, value) =>
+          set((state) => ({
+            ...state,
+            [field]: value,
+          })),
+
+        addExpense: (expense) =>
+          set((state) => ({
+            fixedExpenses: [
+              ...state.fixedExpenses,
+              expense,
+            ],
+          })),
+
+        removeExpense: (id) =>
+          set((state) => ({
+            fixedExpenses:
+              state.fixedExpenses.filter(
+                (item) => item.id !== id
+              ),
+          })),
+      }),
+      {
+        name: "budgeit-onboarding",
+        storage: createJSONStorage(
+          () => AsyncStorage
+        ),
+      }
+    )
+  );
