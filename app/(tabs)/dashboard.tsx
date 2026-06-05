@@ -31,7 +31,8 @@ export default function Dashboard() {
     monthlyIncome,
     fixedExpenses,
     savingsTarget,
-    secondaryIncome
+    secondaryIncome,
+    hasCompletedOnboarding
   } = useOnBoardingStore();
 
   const dailyBudget = getDailyBudget(
@@ -146,9 +147,10 @@ export default function Dashboard() {
           text: "Reset",
           style: "destructive",
           onPress: async () => {
-            await AsyncStorage.clear();
+            hasCompletedOnboarding: false;
+              await AsyncStorage.clear();
 
-            router.replace("/");
+            router.replace("/onboarding/welcome");
           },
         },
       ]

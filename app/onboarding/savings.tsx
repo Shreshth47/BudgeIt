@@ -19,6 +19,7 @@ export default function savings() {
     emergencyFundGoal,
     fixedExpenses,
     setField,
+    markOnboardingComplete,
   } = useOnBoardingStore();
 
   const totalFixedExpenses =
@@ -26,7 +27,7 @@ export default function savings() {
 
   const dailyBudget =
     getDailyBudget(
-      monthlyIncome+secondaryIncome,
+      monthlyIncome + secondaryIncome,
       fixedExpenses,
       savingsTarget
     );
@@ -35,10 +36,10 @@ export default function savings() {
     secondaryIncome -
     totalFixedExpenses;
 
-    console.log(
-  "ONBOARDING DAILY BUDGET",
-  dailyBudget
-);
+  console.log(
+    "ONBOARDING DAILY BUDGET",
+    dailyBudget
+  );
   return (
     <View
       style={{
@@ -83,8 +84,10 @@ export default function savings() {
       />
       <PrimaryButton
         title="Finish Setup"
-        onPress={() =>
-          router.replace("/(tabs)/dashboard" as Href)
+        onPress={() => {
+          markOnboardingComplete();
+          router.replace("/(tabs)/dashboard" as Href);
+        }
         }
       />
 

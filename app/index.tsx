@@ -1,12 +1,26 @@
-import { View, Text, Button, Pressable } from "react-native";
-import WelcomeScreen from "../src/features/onboarding/screens/WelcomeScreen";
-import PrimaryButton from "@/components/buttons/PrimaryButton";
-import { router } from "expo-router";
+import { Redirect } from "expo-router";
 
-export default function Home() {
+import { useOnBoardingStore }
+  from "@/store/useOnBoardingStore";
 
-  return (<>
-    <WelcomeScreen />
-  </>
+export default function Index() {
+  const hasCompletedOnboarding =
+    useOnBoardingStore(
+      (state) =>
+        state.hasCompletedOnboarding
+    );
+
+  if (hasCompletedOnboarding) {
+    return (
+      <Redirect
+        href="/(tabs)/dashboard"
+      />
+    );
+  }
+
+  return (
+    <Redirect
+      href="/onboarding/welcome"
+    />
   );
-};
+}

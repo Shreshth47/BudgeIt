@@ -24,57 +24,58 @@ interface OnboardingState {
   emergencyFundGoal: number;
   overrideDailyLimit: number | null;
 
+  hasCompletedOnboarding: boolean;
+
   setField: (field: string, value: any) => void;
   addExpense: (expense: FixedExpense) => void;
   removeExpense: (id: string) => void;
+  markOnboardingComplete: () => void;
 }
 
-export const useOnBoardingStore =
-  create<OnboardingState>()(
-    persist(
-      (set) => ({
-        fullName: "",
-        dateOfBirth: "",
-        currency: "INR",
-        upiId: "",
+export const useOnBoardingStore = create<OnboardingState>()(
+  persist(
+    (set) => ({
+      fullName: "",
+      dateOfBirth: "",
+      currency: "INR",
+      upiId: "",
 
-        currentBalance: 0,
-        monthlyIncome: 0,
-        secondaryIncome: 0,
+      currentBalance: 0,
+      monthlyIncome: 0,
+      secondaryIncome: 0,
 
-        fixedExpenses: [],
+      fixedExpenses: [],
 
-        savingsTarget: 0,
-        emergencyFundGoal: 0,
-        overrideDailyLimit: null,
+      savingsTarget: 0,
+      emergencyFundGoal: 0,
+      overrideDailyLimit: null,
 
-        setField: (field, value) =>
-          set((state) => ({
-            ...state,
-            [field]: value,
-          })),
+      hasCompletedOnboarding: false,
 
-        addExpense: (expense) =>
-          set((state) => ({
-            fixedExpenses: [
-              ...state.fixedExpenses,
-              expense,
-            ],
-          })),
+      setField: (field, value) =>
+        set((state) => ({
+          ...state,
+          [field]: value,
+        })),
 
-        removeExpense: (id) =>
-          set((state) => ({
-            fixedExpenses:
-              state.fixedExpenses.filter(
-                (item) => item.id !== id
-              ),
-          })),
-      }),
-      {
-        name: "budgeit-onboarding",
-        storage: createJSONStorage(
-          () => AsyncStorage
-        ),
-      }
-    )
-  );
+      addExpense: (expense) =>
+        set((state) => ({
+          fixedExpenses: [...state.fixedExpenses, expense],
+        })),
+
+      markOnboardingComplete: () =>
+        set({
+          hasCompletedOnboarding: true,
+        }),
+
+      removeExpense: (id) =>
+        set((state) => ({
+          fixedExpenses: state.fixedExpenses.filter((item) => item.id !== id),
+        })),
+    }),
+    {
+      name: "budgeit-onboarding",
+      storage: createJSONStorage(() => AsyncStorage),
+    },
+  ),
+);
