@@ -1,4 +1,5 @@
-import { View, Text } from "react-native";
+import { router } from "expo-router";
+import { View, Text, Pressable } from "react-native";
 
 export default function FloatingNav() {
   return (
@@ -20,10 +21,20 @@ export default function FloatingNav() {
         paddingVertical: 16,
       }}
     >
-      <Text>📊</Text>
+      <Pressable
+        onPress={() =>
+          router.push(
+            "/(tabs)/reports"
+          )
+        }
+      >
+        <Text>📊</Text></Pressable>
       <Text>🧾</Text>
-      <Text>💰</Text>
+      <Pressable onPress={() =>
+        router.push("/(tabs)/dashboard")
+      }><Text>💵</Text></Pressable>
+      <Pressable onPress={()=>router.push("/(tabs)/transactions")}><Text>💰</Text></Pressable>
       <Text>👤</Text>
     </View>
   )
-}
+} 

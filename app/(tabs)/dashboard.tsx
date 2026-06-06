@@ -1,7 +1,7 @@
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import { getDailyBudget } from "@/utils/getDailyBudget";
 import { ScrollView, View, Text, Pressable, Alert } from "react-native";
-import { COLORS } from '@/constants/colors'
+import { COLORS } from "@/constants/colors";
 import StatCard from "@/components/cards/StatCard";
 import { getRemainingBudget } from "@/utils/getRemainingBudget";
 import { useDashboardStore } from "@/store/useDashboardStore";
@@ -11,7 +11,7 @@ import SemiBudgetGauge from "@/components/dashboard/SemiCircularGauge";
 import TransactionCard from "@/components/cards/TransactionCard";
 import SummaryCard from "@/components/cards/SummaryCard";
 import FloatingNav from "@/components/common/FloatingNav";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DangerZoneModal from "@/components/modals/DangerZoneModal";
 import { getEffectiveBudget } from "@/utils/getEffectiveBudget";
 import { getOverSpentAmount } from "@/utils/overSpentAmount";
@@ -24,6 +24,8 @@ import Animated, {
 import InsightCard from "@/components/dashboard/InsightCard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import CategorySummary from "@/components/dashboard/CategorySummary";
+import SavingsProgressCard from "@/components/dashboard/SavingsProgressCard";
 
 export default function Dashboard() {
   const {
@@ -32,13 +34,13 @@ export default function Dashboard() {
     fixedExpenses,
     savingsTarget,
     secondaryIncome,
-    hasCompletedOnboarding
+    hasCompletedOnboarding,
   } = useOnBoardingStore();
 
   const dailyBudget = getDailyBudget(
     monthlyIncome + secondaryIncome,
     fixedExpenses,
-    savingsTarget
+    savingsTarget,
   );
 
   const {
@@ -49,54 +51,34 @@ export default function Dashboard() {
     debtCarryForward,
     addDebt,
     simulateNextDay,
-  } = useDashboardStore()
+    checkAndAdvanceDay,
+    lastActiveDate,
+    monthlySavings,
+    addMonthlySavings,
+    checkAndAdvanceMonth,
+  } = useDashboardStore();
 
-  const effectiveBudget =
-    getEffectiveBudget(
-      dailyBudget,
-      rollover,
-      debtCarryForward
-    );
+  const effectiveBudget = getEffectiveBudget(
+    dailyBudget,
+    rollover,
+    debtCarryForward,
+  );
 
-  const remaining =
-    getRemainingBudget(
-      effectiveBudget,
-      todaysSpend,
-      0
-    );
+  const remaining = getRemainingBudget(effectiveBudget, todaysSpend, 0);
 
-  const gaugeBudget =
-    Math.max(
-      effectiveBudget +
-      debtCarryForward,
-      1
-    );
+  const gaugeBudget = Math.max(effectiveBudget + debtCarryForward, 1);
 
-  const unused =
-    Math.max(
-      effectiveBudget -
-      todaysSpend,
-      0
-    );
+  const unused = Math.max(effectiveBudget - todaysSpend, 0);
 
-  const [
-    dangerVisible,
-    setDangerVisible,
-  ] = useState(false);
+  const [dangerVisible, setDangerVisible] = useState(false);
 
-  const [
-    pendingTransaction,
-    setPendingTransaction,
-  ] = useState<{
+  const [pendingTransaction, setPendingTransaction] = useState<{
     amount: number;
     merchant: string;
     category: string;
   } | null>(null);
 
-  const [
-    addExpenseVisible,
-    setAddExpenseVisible,
-  ] = useState(false);
+  const [addExpenseVisible, setAddExpenseVisible] = useState(false);
 
   const scale = useSharedValue(1);
   const fabStyle = useAnimatedStyle(() => ({
@@ -110,7 +92,7 @@ export default function Dashboard() {
   const handleTransactionAttempt = (
     amount: number,
     merchant: string,
-    category: string
+    category: string,
   ) => {
     if (amount > remaining) {
       setPendingTransaction({
@@ -148,14 +130,24 @@ export default function Dashboard() {
           style: "destructive",
           onPress: async () => {
             hasCompletedOnboarding: false;
-              await AsyncStorage.clear();
+            await AsyncStorage.clear();
 
             router.replace("/onboarding/welcome");
           },
         },
-      ]
+      ],
     );
   };
+
+  useEffect(() => {
+    checkAndAdvanceDay(dailyBudget);
+  }, []);
+
+  useEffect(() => {
+    checkAndAdvanceMonth();
+
+    checkAndAdvanceDay(dailyBudget);
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>
@@ -171,19 +163,23 @@ export default function Dashboard() {
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <Text style={{
-            fontSize: 16,
-            color: COLORS.textSecondary,
-            marginTop: 32
-          }}>
+          <Text
+            style={{
+              fontSize: 16,
+              color: COLORS.textSecondary,
+              marginTop: 32,
+            }}
+          >
             Good Morning 👋
           </Text>
 
-          <Text style={{
-            fontSize: 32,
-            fontWeight: "800",
-            color: COLORS.text,
-          }}>
+          <Text
+            style={{
+              fontSize: 32,
+              fontWeight: "800",
+              color: COLORS.text,
+            }}
+          >
             {fullName}
           </Text>
           <Pressable
@@ -193,7 +189,7 @@ export default function Dashboard() {
               paddingVertical: 8,
               borderRadius: 12,
               backgroundColor: "#991B1B",
-              width: 40
+              width: 40,
             }}
           >
             <Text
@@ -216,44 +212,27 @@ export default function Dashboard() {
           dailyBudget={effectiveBudget}
           debtCarryForward={debtCarryForward}
         />
+        <SavingsProgressCard />
+        {/* <SummaryCard title="Saved" value={`₹${monthlySavings}`} /> */}
 
         <View
           style={{
             flexDirection: "row",
             gap: 12,
             marginBottom: 24,
-            marginTop: 14
+            marginTop: 14,
           }}
         >
-          <SummaryCard
-            title="Today's Spend"
-            value={`₹${todaysSpend}`}
-          />
+          <SummaryCard title="Today's Spend" value={`₹${todaysSpend}`} />
 
-          <SummaryCard
-            title="Rollover"
-            value={`₹${rollover}`}
-          />
-          <SummaryCard
-            title="Debt"
-            value={`₹${debtCarryForward}`}
-          />
+          <SummaryCard title="Rollover" value={`₹${rollover}`} />
+          <SummaryCard title="Debt" value={`₹${debtCarryForward}`} />
         </View>
         <AddTransactionModal
           visible={addExpenseVisible}
-          onClose={() =>
-            setAddExpenseVisible(false)
-          }
-          onSubmit={(
-            merchant,
-            amount,
-            category
-          ) => {
-            handleTransactionAttempt(
-              amount,
-              merchant,
-              category
-            );
+          onClose={() => setAddExpenseVisible(false)}
+          onSubmit={(merchant, amount, category) => {
+            handleTransactionAttempt(amount, merchant, category);
           }}
         />
 
@@ -276,24 +255,47 @@ export default function Dashboard() {
           }
         /> */}
 
-        <PrimaryButton
-          title="Simulate Next Day"
-          onPress={() =>
-            simulateNextDay(
-              dailyBudget
-            )
-          }
+        {/* <PrimaryButton
+          title="Test Savings"
+          onPress={() => addMonthlySavings(500)}
         />
-        <Text
+        <PrimaryButton
+          title="Test Month Change"
+          onPress={() =>
+            useDashboardStore.setState({
+              lastActiveMonth: "2025-01",
+            })
+          }
+        /> */}
+        <View
           style={{
-            color: COLORS.text,
-            fontSize: 22,
-            fontWeight: "700",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
             marginBottom: 16,
           }}
         >
-          Recent Transactions
-        </Text>
+          <Text
+            style={{
+              color: COLORS.text,
+              fontSize: 22,
+              fontWeight: "700",
+              marginBottom: 16,
+            }}
+          >
+            Recent Transactions
+          </Text>
+          <Pressable onPress={() => router.push("/(tabs)/transactions")}>
+            <Text
+              style={{
+                color: COLORS.primary,
+                fontWeight: "600",
+              }}
+            >
+              View All
+            </Text>
+          </Pressable>
+        </View>
 
         {transactions.length === 0 ? (
           <Text
@@ -304,45 +306,44 @@ export default function Dashboard() {
             No transactions yet
           </Text>
         ) : (
-          transactions.map((transaction) => (
-            <TransactionCard
-              key={transaction.id}
-              merchant={transaction.merchant}
-              amount={transaction.amount}
-              category={transaction.category}
-              timestamp={transaction.timestamp}
-            />
-          ))
+          transactions
+            .slice(0, 5)
+            .map((transaction) => (
+              <TransactionCard
+                key={transaction.id}
+                id={transaction.id}
+                merchant={transaction.merchant}
+                amount={transaction.amount}
+                category={transaction.category}
+                timestamp={transaction.timestamp}
+              />
+            ))
         )}
         <Animated.View style={fabStyle}>
           <PrimaryButton
             onPress={() => {
               setAddExpenseVisible(true);
-            }
-            }
+            }}
             title="Add Transaction"
           />
         </Animated.View>
+
+        <CategorySummary />
+
         <DangerZoneModal
           visible={dangerVisible}
-          transactionAmount={
-            pendingTransaction?.amount ?? 0
-          }
+          transactionAmount={pendingTransaction?.amount ?? 0}
           remainingBudget={remaining}
           dailyBudget={dailyBudget}
           onBorrowTomorrow={() => {
             if (!pendingTransaction) return;
-            const overspent =
-              (pendingTransaction?.amount ?? 0) -
-              remaining;
+            const overspent = (pendingTransaction?.amount ?? 0) - remaining;
 
             addDebt(overspent);
 
             addTransaction({
               id: Date.now().toString(),
-              merchant:
-                pendingTransaction?.merchant ??
-                "Unknown",
+              merchant: pendingTransaction?.merchant ?? "Unknown",
               amount: pendingTransaction?.amount ?? 0,
               category: pendingTransaction?.category ?? "Unknown",
               timestamp: Date.now(),
@@ -355,10 +356,8 @@ export default function Dashboard() {
             setDangerVisible(false);
           }}
         />
-
       </ScrollView>
       <FloatingNav />
     </View>
-
-  )
+  );
 }

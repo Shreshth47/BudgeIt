@@ -24,6 +24,7 @@ export default function SummaryCard({
         borderColor: "rgba(255,255,255,0.05)",
         padding: 16,
         shadowOpacity: 0.2,
+        marginTop: 8
       }}
     >
       <Text
@@ -37,7 +38,7 @@ export default function SummaryCard({
       <Text
         style={{
           color: COLORS.text,
-          fontSize: 24,
+          fontSize: 20,
           fontWeight: "700",
           marginTop: 8,
         }}
