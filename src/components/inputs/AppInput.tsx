@@ -20,7 +20,9 @@ export default function AppInput ({value,placeholder,onChangeText,keyboardType}:
         backgroundColor: COLORS.card,
         color: COLORS.text,
         borderRadius: 16,
-        padding: 16,
+        borderColor: COLORS.primary,
+        borderWidth: 1,
+        padding: 12,
         marginBottom: 16,
       }}
     />

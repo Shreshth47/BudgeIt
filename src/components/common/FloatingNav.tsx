@@ -21,20 +21,19 @@ export default function FloatingNav() {
         paddingVertical: 16,
       }}
     >
-      <Pressable
-        onPress={() =>
-          router.push(
-            "/(tabs)/reports"
-          )
-        }
-      >
-        <Text>📊</Text></Pressable>
+      <Pressable onPress={() => router.push("/(tabs)/reports")}>
+        <Text>📊</Text>
+      </Pressable>
       <Text>🧾</Text>
-      <Pressable onPress={() =>
-        router.push("/(tabs)/dashboard")
-      }><Text>💵</Text></Pressable>
-      <Pressable onPress={()=>router.push("/(tabs)/transactions")}><Text>💰</Text></Pressable>
-      <Text>👤</Text>
+      <Pressable onPress={() => router.push("/(tabs)/dashboard")}>
+        <Text>💵</Text>
+      </Pressable>
+      <Pressable onPress={() => router.push("/(tabs)/transactions")}>
+        <Text>💰</Text>
+      </Pressable>
+      <Pressable onPress={() => router.push("/(tabs)/profile")}>
+        <Text>👤</Text>
+      </Pressable>
     </View>
-  )
-} 
+  );
+}

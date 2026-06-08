@@ -26,6 +26,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import CategorySummary from "@/components/dashboard/CategorySummary";
 import SavingsProgressCard from "@/components/dashboard/SavingsProgressCard";
+import { sendLocalNotification } from "@/utils/notifications";
 
 export default function Dashboard() {
   const {
@@ -265,6 +266,12 @@ export default function Dashboard() {
             useDashboardStore.setState({
               lastActiveMonth: "2025-01",
             })
+          }
+        /> */}
+        {/* <PrimaryButton
+          title="Test Notification"
+          onPress={() =>
+            sendLocalNotification("BudgeIt", "Notification system works!")
           }
         /> */}
         <View

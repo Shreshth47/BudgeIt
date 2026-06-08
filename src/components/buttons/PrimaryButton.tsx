@@ -17,7 +17,7 @@ export default function PrimaryButton({
         backgroundColor: COLORS.primary,
         paddingVertical: 16,
         borderRadius: 16,
-        marginBottom: 52,
+        marginBottom: 32,
         alignItems: "center",
       }}
     >
