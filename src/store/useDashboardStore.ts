@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isToday } from "@/utils/isToday";
+import { sendLocalNotification } from "@/utils/notifications";
 
 interface Transaction {
   id: string;
@@ -9,6 +10,7 @@ interface Transaction {
   amount: number;
   timestamp: number;
   category: string;
+  debtCreated: number;
 }
 
 interface DashboardState {
@@ -99,7 +101,12 @@ export const useDashboardStore = create<DashboardState>()(
           return {
             transactions: state.transactions.filter((t) => t.id !== id),
 
-            todaysSpend: state.todaysSpend - (transaction?.amount ?? 0),
+            todaysSpend: state.todaysSpend - transaction.amount,
+
+            debtCarryForward: Math.max(
+              state.debtCarryForward - (transaction.debtCreated ?? 0),
+              0,
+            ),
           };
         }),
 
@@ -138,6 +145,10 @@ export const useDashboardStore = create<DashboardState>()(
           console.log("AFTER");
           console.log("unused:", unused);
           console.log("remainingDebt:", remainingDebt);
+          sendLocalNotification(
+            "☀️ New Day Started",
+            `Today's allowance is ₹${effectiveBudget}`,
+          );
 
           return {
             rollover: unused,

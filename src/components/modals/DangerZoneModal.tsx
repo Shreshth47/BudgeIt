@@ -120,7 +120,7 @@ export default function DangerZoneModal({
             }}
           >
             This purchase will affect
-            the next {daysAffected} day
+            the next {daysAffected} day 
             {daysAffected > 1 ? "s" : ""}
             of allowance.
           </Text>

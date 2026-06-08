@@ -114,7 +114,22 @@ export default function Dashboard() {
       category,
 
       timestamp: Date.now(),
+      debtCreated: 0,
     });
+    const newRemaining = remaining - amount;
+
+    if (newRemaining > 0 && newRemaining <= effectiveBudget * 0.1) {
+      sendLocalNotification(
+        "⚠️ Budget Warning",
+        `Only ₹${newRemaining} left today`,
+      );
+    }
+    if (newRemaining <= 0) {
+      sendLocalNotification(
+        "🚨 Allowance Exhausted",
+        "Further spending will create debt.",
+      );
+    }
   };
 
   const handleResetApp = () => {
@@ -268,12 +283,12 @@ export default function Dashboard() {
             })
           }
         /> */}
-        {/* <PrimaryButton
+        <PrimaryButton
           title="Test Notification"
           onPress={() =>
             sendLocalNotification("BudgeIt", "Notification system works!")
           }
-        /> */}
+        />
         <View
           style={{
             flexDirection: "row",
@@ -344,9 +359,17 @@ export default function Dashboard() {
           dailyBudget={dailyBudget}
           onBorrowTomorrow={() => {
             if (!pendingTransaction) return;
-            const overspent = (pendingTransaction?.amount ?? 0) - remaining;
+            const overspent = Math.max(
+              pendingTransaction.amount - remaining,
+              0,
+            );
 
             addDebt(overspent);
+            const reducedTomorrow = dailyBudget - overspent;
+            sendLocalNotification(
+              "⚠️ Budget Borrowed",
+              `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
+            );
 
             addTransaction({
               id: Date.now().toString(),
@@ -354,6 +377,7 @@ export default function Dashboard() {
               amount: pendingTransaction?.amount ?? 0,
               category: pendingTransaction?.category ?? "Unknown",
               timestamp: Date.now(),
+              debtCreated: overspent,
             });
             setPendingTransaction(null);
             setDangerVisible(false);
