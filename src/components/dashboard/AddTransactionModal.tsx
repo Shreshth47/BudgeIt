@@ -1,56 +1,38 @@
-import {
-  Modal,
-  View,
-  Text,
-  TextInput,
-  Pressable,
-} from "react-native";
+import { Modal, View, Text, TextInput, Pressable } from "react-native";
 
 import { useState } from "react";
 
 import { COLORS } from "@/constants/colors";
 import { CATEGORIES } from "@/constants/categories";
+import { detectCategory } from "@/utils/detectCategory";
 
 interface Props {
   visible: boolean;
 
   onClose: () => void;
 
-  onSubmit: (
-    merchant: string,
-    amount: number,
-    category: string
-  ) => void;
+  onSubmit: (merchant: string, amount: number, category: string) => void;
 }
 
 export default function AddTransactionModal({
-  visible, onClose, onSubmit
+  visible,
+  onClose,
+  onSubmit,
 }: Props) {
-  const [merchant, setMerchant] =
-    useState("");
+  const [merchant, setMerchant] = useState("");
 
-  const [amount, setAmount] =
-    useState("");
+  const [amount, setAmount] = useState("");
 
-  const [category, setCategory] =
-    useState("Food");
+  const [category, setCategory] = useState("Food");
 
   const handleSave = () => {
-    const parsedAmount =
-      Number(amount);
+    const parsedAmount = Number(amount);
 
-    if (
-      !merchant ||
-      parsedAmount <= 0
-    ) {
+    if (!merchant || parsedAmount <= 0) {
       return;
     }
 
-    onSubmit(
-      merchant,
-      parsedAmount,
-      category
-    );
+    onSubmit(merchant, parsedAmount, category);
 
     setMerchant("");
     setAmount("");
@@ -60,23 +42,17 @@ export default function AddTransactionModal({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-    >
+    <Modal visible={visible} transparent animationType="slide">
       <View
         style={{
           flex: 1,
           justifyContent: "flex-end",
-          backgroundColor:
-            "rgba(0,0,0,0.5)",
+          backgroundColor: "rgba(0,0,0,0.5)",
         }}
       >
         <View
           style={{
-            backgroundColor:
-              COLORS.card,
+            backgroundColor: COLORS.card,
 
             borderTopLeftRadius: 28,
             borderTopRightRadius: 28,
@@ -96,16 +72,15 @@ export default function AddTransactionModal({
           </Text>
           <TextInput
             placeholder="Merchant"
-
             placeholderTextColor="#6B7280"
-
             value={merchant}
+            onChangeText={(text) => {
+              setMerchant(text);
 
-            onChangeText={setMerchant}
-
+              setCategory(detectCategory(text));
+            }}
             style={{
-              backgroundColor:
-                COLORS.background,
+              backgroundColor: COLORS.background,
 
               color: COLORS.text,
 
@@ -113,23 +88,27 @@ export default function AddTransactionModal({
 
               borderRadius: 16,
 
-              marginBottom: 16,
+              marginBottom: 2,
             }}
           />
+          <Text
+            style={{
+              color: "#22C55E",
+              marginBottom: 14,
+              paddingLeft: 12,
+              fontSize: 10
+            }}
+          >
+            Suggested category: {category}
+          </Text>
           <TextInput
             placeholder="Amount"
-
             placeholderTextColor="#6B7280"
-
             keyboardType="numeric"
-
             value={amount}
-
             onChangeText={setAmount}
-
             style={{
-              backgroundColor:
-                COLORS.background,
+              backgroundColor: COLORS.background,
 
               color: COLORS.text,
 
@@ -151,9 +130,7 @@ export default function AddTransactionModal({
             {CATEGORIES.map((item) => (
               <Pressable
                 key={item}
-                onPress={() =>
-                  setCategory(item)
-                }
+                onPress={() => setCategory(item)}
                 style={{
                   paddingHorizontal: 16,
                   paddingVertical: 10,
@@ -161,9 +138,7 @@ export default function AddTransactionModal({
                   borderRadius: 999,
 
                   backgroundColor:
-                    category === item
-                      ? COLORS.primary
-                      : COLORS.background,
+                    category === item ? COLORS.primary : COLORS.background,
                 }}
               >
                 <Text
@@ -179,8 +154,7 @@ export default function AddTransactionModal({
           <Pressable
             onPress={handleSave}
             style={{
-              backgroundColor:
-                COLORS.primary,
+              backgroundColor: COLORS.primary,
 
               padding: 18,
 
@@ -211,12 +185,11 @@ export default function AddTransactionModal({
                 textAlign: "center",
               }}
             >
-              Cancel
+              ❌
             </Text>
           </Pressable>
         </View>
       </View>
     </Modal>
-  )
+  );
 }
-

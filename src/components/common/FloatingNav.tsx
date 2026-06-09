@@ -1,7 +1,14 @@
-import { router } from "expo-router";
+import { router, usePathname } from "expo-router";
 import { View, Text, Pressable } from "react-native";
 
-export default function FloatingNav() {
+interface Props {
+  onAddTransaction?: () => void;
+}
+
+export default function FloatingNav({ onAddTransaction }: Props) {
+  const pathname = usePathname();
+  const isDashboard =
+    pathname === "/dashboard" || pathname === "/(tabs)/dashboard";
   return (
     <View
       style={{
@@ -25,8 +32,23 @@ export default function FloatingNav() {
         <Text>📊</Text>
       </Pressable>
       <Text>🧾</Text>
-      <Pressable onPress={() => router.push("/(tabs)/dashboard")}>
-        <Text>💵</Text>
+      <Pressable
+        onPress={() => {
+          if (isDashboard) {
+            onAddTransaction?.();
+          } else {
+            router.push("/(tabs)/dashboard");
+          }
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "700",
+          }}
+        >
+          {isDashboard ? "➕" : "💵"}
+        </Text>
       </Pressable>
       <Pressable onPress={() => router.push("/(tabs)/transactions")}>
         <Text>💰</Text>

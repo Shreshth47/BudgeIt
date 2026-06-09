@@ -341,14 +341,14 @@ export default function Dashboard() {
               />
             ))
         )}
-        <Animated.View style={fabStyle}>
+        {/* <Animated.View style={fabStyle}>
           <PrimaryButton
             onPress={() => {
               setAddExpenseVisible(true);
             }}
             title="Add Transaction"
           />
-        </Animated.View>
+        </Animated.View> */}
 
         <CategorySummary />
 
@@ -388,7 +388,7 @@ export default function Dashboard() {
           }}
         />
       </ScrollView>
-      <FloatingNav />
+      <FloatingNav onAddTransaction={() => setAddExpenseVisible(true)} />
     </View>
   );
 }
