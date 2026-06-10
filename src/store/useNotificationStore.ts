@@ -22,6 +22,8 @@ interface NotificationState {
   markAsRead: (id: string) => void;
 
   markAllAsRead: () => void;
+
+  deleteNotification: (id: string) => void;
 }
 
 export const useNotificationStore = create<NotificationState>()(
@@ -31,7 +33,7 @@ export const useNotificationStore = create<NotificationState>()(
 
       addNotification: (notification) =>
         set((state) => ({
-          notifications: [notification, ...state.notifications].slice(0,100),
+          notifications: [notification, ...state.notifications].slice(0, 100),
         })),
 
       markAsRead: (id) =>
@@ -53,7 +55,12 @@ export const useNotificationStore = create<NotificationState>()(
             read: true,
           })),
         })),
+      deleteNotification: (id) =>
+        set((state) => ({
+          notifications: state.notifications.filter((n) => n.id !== id),
+        })),
     }),
+
     {
       name: "budgeit-notifications",
 

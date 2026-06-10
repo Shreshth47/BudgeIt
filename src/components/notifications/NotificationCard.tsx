@@ -8,6 +8,7 @@ import Animated, {
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
+import { Alert } from "react-native";
 
 import {
   AppNotification,
@@ -81,6 +82,20 @@ export default function NotificationCard({ notification }: Props) {
     }
   };
 
+  const handleDelete = () => {
+    Alert.alert("Delete Notification", "Remove this notification?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteNotification(notification.id),
+      },
+    ]);
+  };
+
   const iconData = getNotificationIcon();
 
   const formattedTime = new Date(notification.timestamp).toLocaleString([], {
@@ -90,9 +105,13 @@ export default function NotificationCard({ notification }: Props) {
     minute: "2-digit",
   });
 
+  const deleteNotification = useNotificationStore(
+    (state) => state.deleteNotification,
+  );
+
   return (
     <Animated.View
-      layout={LinearTransition.springify().damping(25).stiffness(300)}
+      layout={LinearTransition.springify().damping(50).stiffness(300)}
     >
       <Pressable
         onPress={handlePress}
@@ -162,10 +181,7 @@ export default function NotificationCard({ notification }: Props) {
         </Text>
 
         {expanded && (
-          <Animated.View
-            entering={FadeIn.duration(300)}
-            exiting={FadeOut.duration(100)}
-          >
+          <Animated.View entering={FadeIn.duration(300)} exiting={FadeOut.duration(100)}>
             <Text
               style={{
                 color: COLORS.text,
@@ -175,6 +191,23 @@ export default function NotificationCard({ notification }: Props) {
             >
               {notification.message}
             </Text>
+
+            <Pressable
+              onPress={handleDelete}
+              style={{
+                marginTop: 16,
+                alignSelf: "flex-end",
+              }}
+            >
+              <Text
+                style={{
+                  color: COLORS.danger,
+                  fontWeight: "700",
+                }}
+              >
+                Delete
+              </Text>
+            </Pressable>
           </Animated.View>
         )}
       </Pressable>
