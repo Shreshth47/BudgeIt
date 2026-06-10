@@ -29,7 +29,7 @@ export default function InsightCard({
     message = `Only ${remaining} remains available today.`;
   }
   if (ratio == 0) {
-    statusColor = "#800080";
+    statusColor = "#EF4444";
     title = "Exhausted";
     message = `No more spendings for today.`;
   }
@@ -44,7 +44,7 @@ export default function InsightCard({
         marginTop: -100,
         elevation: 12,
         shadowRadius: 20,
-        borderLeftWidth:3,
+        borderLeftWidth: 3,
         borderLeftColor: statusColor,
         borderWidth: 1,
         borderColor: COLORS.border,

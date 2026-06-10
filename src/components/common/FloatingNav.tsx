@@ -1,7 +1,8 @@
 import { COLORS } from "@/constants/colors";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { useNotificationStore } from "@/store/useNotificationStore";
 
 interface Props {
   onAddTransaction?: () => void;
@@ -17,6 +18,12 @@ export default function FloatingNav({ onAddTransaction }: Props) {
   const isTransactions = pathname.includes("transactions");
 
   const isProfile = pathname.includes("profile");
+
+  const isNotification = pathname.includes("notifications");
+
+  const unreadCount = useNotificationStore(
+    (state) => state.notifications.filter((n) => !n.read).length,
+  );
   return (
     <View
       style={{
@@ -26,10 +33,10 @@ export default function FloatingNav({ onAddTransaction }: Props) {
         right: 1,
         height: 74,
         backgroundColor: COLORS.card,
-        borderTopLeftRadius:4,
-        borderTopRightRadius:4,
-        borderBottomRightRadius:52,
-        borderBottomLeftRadius:52,
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
+        borderBottomRightRadius: 52,
+        borderBottomLeftRadius: 52,
         borderWidth: 1,
         borderColor: "#065465",
         flexDirection: "row",
@@ -50,12 +57,43 @@ export default function FloatingNav({ onAddTransaction }: Props) {
         />
       </Pressable>
 
-      <Pressable onPress={() => router.push("/(tabs)/transactions")}>
+      <Pressable
+        onPress={() => router.push("/(tabs)/notifications")}
+        style={{
+          position: "relative",
+        }}
+      >
         <MaterialCommunityIcons
-          name="receipt"
+          name="bell-outline"
           size={22}
-          color={isTransactions ? COLORS.primary : COLORS.textSecondary}
+          color={isNotification ? COLORS.primary : COLORS.textSecondary}
         />
+
+        {unreadCount > 0 && (
+          <View
+            style={{
+              position: "absolute",
+              top: -6,
+              right: -8,
+              minWidth: 18,
+              height: 18,
+              borderRadius: 999,
+              backgroundColor: COLORS.danger,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: "white",
+                fontSize: 10,
+                fontWeight: "700",
+              }}
+            >
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </Text>
+          </View>
+        )}
       </Pressable>
 
       {/* CENTER BUTTON */}

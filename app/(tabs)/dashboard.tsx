@@ -36,6 +36,7 @@ import SavingsProgressCard from "@/components/dashboard/SavingsProgressCard";
 import { sendLocalNotification } from "@/utils/notifications";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
+import { useNotificationStore } from "@/store/useNotificationStore";
 
 export default function Dashboard() {
   const {
@@ -46,6 +47,8 @@ export default function Dashboard() {
     secondaryIncome,
     hasCompletedOnboarding,
   } = useOnBoardingStore();
+
+  const { addNotification } = useNotificationStore();
 
   const dailyBudget = getDailyBudget(
     monthlyIncome + secondaryIncome,
@@ -132,12 +135,38 @@ export default function Dashboard() {
         "⚠️ Budget Warning",
         `Only ₹${newRemaining} left today`,
       );
+      addNotification({
+        id: Date.now().toString(),
+
+        title: "Budget Warning",
+
+        message: "You have entered the danger zone.",
+
+        timestamp: Date.now(),
+
+        read: false,
+
+        type: "warning",
+      });
     }
     if (newRemaining <= 0) {
       sendLocalNotification(
         "🚨 Allowance Exhausted",
         "Further spending will create debt.",
       );
+      addNotification({
+        id: Date.now().toString(),
+
+        title: "Debt Activated",
+
+        message: `₹${debtCarryForward} borrowed from tomorrow.`,
+
+        timestamp: Date.now(),
+
+        read: false,
+
+        type: "debt",
+      });
     }
   };
 
@@ -412,6 +441,19 @@ export default function Dashboard() {
                 "⚠️ Budget Borrowed",
                 `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
               );
+              addNotification({
+                id: Date.now().toString(),
+
+                title: "Debt Created",
+
+                message: `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
+
+                timestamp: Date.now(),
+
+                read: false,
+
+                type: "warning",
+              });
 
               addTransaction({
                 id: Date.now().toString(),

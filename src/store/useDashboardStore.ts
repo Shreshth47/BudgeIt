@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isToday } from "@/utils/isToday";
 import { sendLocalNotification } from "@/utils/notifications";
+import { useNotificationStore } from "./useNotificationStore";
 
 interface Transaction {
   id: string;
@@ -137,6 +138,8 @@ export const useDashboardStore = create<DashboardState>()(
             0,
           );
 
+          const { addNotification } = useNotificationStore();
+
           console.log("BEFORE");
           console.log("todaysSpend:", state.todaysSpend);
           console.log("rollover:", state.rollover);
@@ -149,6 +152,19 @@ export const useDashboardStore = create<DashboardState>()(
             "☀️ New Day Started",
             `Today's allowance is ₹${effectiveBudget}`,
           );
+          addNotification({
+            id: Date.now().toString(),
+
+            title: "New Day Started",
+
+            message: `Today's allowance is ₹${effectiveBudget}.`,
+
+            timestamp: Date.now(),
+
+            read: false,
+
+            type: "success",
+          });
 
           return {
             rollover: unused,
