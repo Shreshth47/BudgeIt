@@ -443,16 +443,11 @@ export default function Dashboard() {
               );
               addNotification({
                 id: Date.now().toString(),
-
                 title: "Debt Created",
-
                 message: `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
-
                 timestamp: Date.now(),
-
                 read: false,
-
-                type: "warning",
+                type: "debt",
               });
 
               addTransaction({

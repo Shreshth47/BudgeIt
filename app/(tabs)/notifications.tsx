@@ -45,10 +45,11 @@ export default function Notifications() {
             <Text
               style={{
                 color: COLORS.textSecondary,
+
                 marginTop: 4,
               }}
             >
-              Notifications and alerts
+              {notifications.length} notifications
             </Text>
           </View>
 

@@ -154,15 +154,10 @@ export const useDashboardStore = create<DashboardState>()(
           );
           addNotification({
             id: Date.now().toString(),
-
             title: "New Day Started",
-
             message: `Today's allowance is ₹${effectiveBudget}.`,
-
             timestamp: Date.now(),
-
             read: false,
-
             type: "success",
           });
 
