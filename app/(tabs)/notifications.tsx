@@ -8,12 +8,49 @@ import FloatingNav from "@/components/common/FloatingNav";
 import NotificationCard from "@/components/notifications/NotificationCard";
 
 import { LinearGradient } from "expo-linear-gradient";
+import { getNotificationGroup } from "@/utils/getNotificationsGroup";
+import { useState } from "react";
 
 export default function Notifications() {
   const notifications = useNotificationStore((state) => state.notifications);
 
   const markAllAsRead = useNotificationStore((state) => state.markAllAsRead);
 
+  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const filteredNotifications =
+    filter === "all" ? notifications : notifications.filter((n) => !n.read);
+  const groupedNotifications = {
+    Today: filteredNotifications.filter(
+      (n) => getNotificationGroup(n.timestamp) === "Today",
+    ),
+
+    Yesterday: filteredNotifications.filter(
+      (n) => getNotificationGroup(n.timestamp) === "Yesterday",
+    ),
+
+    Older: filteredNotifications.filter(
+      (n) => getNotificationGroup(n.timestamp) === "Older",
+    ),
+  };
+  const renderSectionHeader = (title: string) => (
+    <Text
+      style={{
+        color: COLORS.textSecondary,
+
+        fontSize: 12,
+
+        fontWeight: "700",
+
+        letterSpacing: 2,
+
+        marginBottom: 12,
+
+        marginTop: 8,
+      }}
+    >
+      {title.toUpperCase()}
+    </Text>
+  );
   return (
     <View style={{ flex: 1 }}>
       <LinearGradient
@@ -52,6 +89,65 @@ export default function Notifications() {
               {notifications.length} notifications
             </Text>
           </View>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 10,
+              marginBottom: 20,
+            }}
+          >
+            <Pressable
+              onPress={() => setFilter("all")}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+
+                borderRadius: 999,
+
+                backgroundColor:
+                  filter === "all" ? COLORS.primary : COLORS.card,
+
+                borderWidth: 1,
+
+                borderColor: filter === "all" ? COLORS.primary : COLORS.border,
+              }}
+            >
+              <Text
+                style={{
+                  color: filter === "all" ? "#FFF" : COLORS.text,
+                  fontWeight: "600",
+                }}
+              >
+                All
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setFilter("unread")}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+
+                borderRadius: 999,
+
+                backgroundColor:
+                  filter === "unread" ? COLORS.primary : COLORS.card,
+
+                borderWidth: 1,
+
+                borderColor:
+                  filter === "unread" ? COLORS.primary : COLORS.border,
+              }}
+            >
+              <Text
+                style={{
+                  color: filter === "unread" ? "#FFF" : COLORS.text,
+                  fontWeight: "600",
+                }}
+              >
+                Unread
+              </Text>
+            </Pressable>
+          </View>
 
           <Pressable
             onPress={markAllAsRead}
@@ -70,13 +166,45 @@ export default function Notifications() {
             </Text>
           </Pressable>
 
-          {notifications.map((notification) => (
-            <NotificationCard
-              key={notification.id}
-              notification={notification}
-            />
-          ))}
-          {notifications.length === 0 && (
+          {groupedNotifications.Today.length > 0 && (
+            <>
+              {renderSectionHeader("Today")}
+
+              {groupedNotifications.Today.map((filteredNotifications) => (
+                <NotificationCard
+                  key={filteredNotifications.id}
+                  notification={filteredNotifications}
+                />
+              ))}
+            </>
+          )}
+
+          {groupedNotifications.Yesterday.length > 0 && (
+            <>
+              {renderSectionHeader("Yesterday")}
+
+              {groupedNotifications.Yesterday.map((filteredNotifications) => (
+                <NotificationCard
+                  key={filteredNotifications.id}
+                  notification={filteredNotifications}
+                />
+              ))}
+            </>
+          )}
+
+          {groupedNotifications.Older.length > 0 && (
+            <>
+              {renderSectionHeader("Older")}
+
+              {groupedNotifications.Older.map((filteredNotifications) => (
+                <NotificationCard
+                  key={filteredNotifications.id}
+                  notification={filteredNotifications}
+                />
+              ))}
+            </>
+          )}
+          {filteredNotifications.length === 0 && (
             <View
               style={{
                 alignItems: "center",
@@ -99,7 +227,9 @@ export default function Notifications() {
                   marginTop: 12,
                 }}
               >
-                No Notifications Yet
+                {filter === "unread"
+                  ? "No Unread Notifications"
+                  : "No Notifications Yet"}
               </Text>
 
               <Text
