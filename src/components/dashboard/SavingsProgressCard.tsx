@@ -5,79 +5,105 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 
 export default function SavingsProgressCard() {
-  const savingsTarget =
-    useOnBoardingStore(
-      (state) => state.savingsTarget
-    );
+  const savingsTarget = useOnBoardingStore((state) => state.savingsTarget);
 
-  const actualSavings =
-    useDashboardStore(
-      (state) => state.monthlySavings
-    );
+  const actualSavings = useDashboardStore((state) => state.monthlySavings);
 
-  const rollover =
-    useDashboardStore(
-      (state) => state.rollover
-    );
+  const rollover = useDashboardStore((state) => state.rollover);
 
-  const projectedSavings =
-    actualSavings +
-    rollover;
+  const projectedSavings = actualSavings + rollover;
 
   const percentage =
     savingsTarget === 0
       ? 0
-      : Math.min(
-        (projectedSavings /
-          savingsTarget) * 100,
-        100
-      );
+      : Math.min((projectedSavings / savingsTarget) * 100, 100);
 
   return (
     <View
       style={{
         backgroundColor: COLORS.card,
         borderRadius: 20,
+        borderWidth: 1,
+        borderColor: COLORS.border,
         padding: 20,
-        marginTop: 8
+        marginTop: 8,
+        elevation: 8
       }}
     >
       <Text
         style={{
-          color: COLORS.text,
-          fontSize: 20,
-          fontWeight: "700",
-          marginBottom: 16,
+          color: COLORS.textSecondary,
+          fontSize: 12,
+          fontWeight: "600",
+          letterSpacing: 2,
         }}
       >
-        💰 Savings Progress
+        MONTHLY SAVINGS
       </Text>
 
       <Text
         style={{
           color: COLORS.text,
-          fontSize: 28,
-          fontWeight: "700",
+          fontSize: 30,
+          fontWeight: "800",
+          marginBottom: 8,
         }}
       >
         ₹{projectedSavings}
       </Text>
 
-      <Text
+      <View
         style={{
-          color: COLORS.textSecondary,
+          flexDirection: "row",
+          justifyContent: "space-between",
           marginBottom: 16,
         }}
       >
-        Target ₹{savingsTarget}{"\n"}
-        Actual Saved ₹{actualSavings}
-      </Text>
+        <View>
+          <Text
+            style={{
+              color: COLORS.textSecondary,
+              fontSize: 12,
+            }}
+          >
+            TARGET
+          </Text>
 
-      <View
+          <Text
+            style={{
+              color: COLORS.text,
+              fontWeight: "700",
+            }}
+          >
+            ₹{savingsTarget}
+          </Text>
+        </View>
+
+        <View>
+          <Text
+            style={{
+              color: COLORS.textSecondary,
+              fontSize: 12,
+            }}
+          >
+            SAVED
+          </Text>
+
+          <Text
+            style={{
+              color: COLORS.text,
+              fontWeight: "700",
+            }}
+          >
+            ₹{actualSavings}
+          </Text>
+        </View>
+      </View>
+      {/* <View
         style={{
-          height: 10,
+          height: 14,
           backgroundColor: "#1F2937",
-          borderRadius: 10,
+          borderRadius: 999,
           overflow: "hidden",
         }}
       >
@@ -85,21 +111,29 @@ export default function SavingsProgressCard() {
           style={{
             width: `${percentage}%`,
             height: "100%",
-            backgroundColor:
-              COLORS.success,
+            backgroundColor: COLORS.primary,
+            borderRadius: 999,
           }}
         />
-      </View>
+      </View> */}
 
-      <Text
+      <View
         style={{
-          color: COLORS.textSecondary,
-          marginTop: 8,
+          backgroundColor: "rgba(14,165,164,0.15)",
+          paddingHorizontal: 10,
+          paddingVertical: 5,
+          borderRadius: 999,
         }}
       >
-        {Math.round(percentage)}%
-        completed
-      </Text>
+        <Text
+          style={{
+            color: COLORS.primary,
+            fontWeight: "700",
+          }}
+        >
+          {Math.round(percentage)}%
+        </Text>
+      </View>
     </View>
   );
 }

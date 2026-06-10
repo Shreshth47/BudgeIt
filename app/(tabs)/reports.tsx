@@ -7,6 +7,7 @@ import FloatingNav from "@/components/common/FloatingNav";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import SavingsProgressCard from "@/components/dashboard/SavingsProgressCard";
 import CategoryBarChart from "@/components/reports/CategoryBarChart";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Reports() {
   const transactions = useDashboardStore((state) => state.transactions);
@@ -66,10 +67,16 @@ export default function Reports() {
 
   return (
     <View style={{ flex: 1 }}>
+      <LinearGradient
+              colors={["#09090B", "#0B1115", "#09090B"]}
+              locations={[0, 0.5, 1]}
+              style={{
+                flex: 1,
+              }}
+            >
       <ScrollView
         style={{
           flex: 1,
-          backgroundColor: COLORS.background,
         }}
         contentContainerStyle={{
           padding: 24,
@@ -207,6 +214,7 @@ export default function Reports() {
         })}
         <SavingsProgressCard />
       </ScrollView>
+      </LinearGradient>
       <FloatingNav />
     </View>
   );

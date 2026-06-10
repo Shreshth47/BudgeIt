@@ -1,8 +1,6 @@
 import { View, Text } from "react-native";
 import { COLORS } from "@/constants/colors";
-import Animated, {
-  FadeInUp,
-} from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 interface Props {
   remaining: number;
@@ -15,49 +13,75 @@ export default function InsightCard({
   dailyBudget,
   debtCarryForward,
 }: Props) {
-  let emoji = "🟢";
-  let title = "Looking Good";
+  let statusColor = "#22C55E";
+  let title = "Budget On Track";
   let message = "You're spending responsibly today.";
 
   const ratio = remaining / dailyBudget;
 
   if (debtCarryForward > 0) {
-    emoji = "🔴";
-    title = "Debt Active";
-    message =
-      `Tomorrow's allowance is reduced by ₹${debtCarryForward}.`;
+    statusColor = "#EF4444";
+    title = "Debt Carry Forward";
+    message = `Tomorrow's allowance is reduced by ${debtCarryForward}.`;
   } else if (ratio < 0.2) {
-    emoji = "🟠";
-    title = "Danger Zone";
-    message =
-      `Only ₹${remaining} left today. Spend carefully.`;
+    statusColor = "#F59E0B";
+    title = "Approaching Limit";
+    message = `Only ${remaining} remains available today.`;
+  }
+  if (ratio == 0) {
+    statusColor = "#800080";
+    title = "Exhausted";
+    message = `No more spendings for today.`;
   }
 
   return (
     <Animated.View
-    entering={FadeInUp.duration(600)}
+      entering={FadeInUp.duration(600)}
       style={{
-        backgroundColor: COLORS.card,
-        padding: 18,
+        backgroundColor: "#101114",
+        padding: 14,
         borderRadius: 20,
         marginTop: -100,
+        elevation: 12,
+        shadowRadius: 20,
+        borderLeftWidth:3,
+        borderLeftColor: statusColor,
+        borderWidth: 1,
+        borderColor: COLORS.border,
       }}
     >
-      <Text
+      <View
         style={{
-          color: COLORS.text,
-          fontSize: 18,
-          fontWeight: "700",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
         }}
       >
-        {emoji} {title}
-      </Text>
+        <View
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: 999,
+            backgroundColor: statusColor,
+          }}
+        />
+
+        <Text
+          style={{
+            color: COLORS.text,
+            fontSize: 18,
+            fontWeight: "800",
+          }}
+        >
+          {title}
+        </Text>
+      </View>
 
       <Text
         style={{
           color: COLORS.textSecondary,
           marginTop: 8,
-          lineHeight: 22,
+          lineHeight: 16,
         }}
       >
         {message}

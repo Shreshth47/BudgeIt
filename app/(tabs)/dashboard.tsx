@@ -1,6 +1,13 @@
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import { getDailyBudget } from "@/utils/getDailyBudget";
-import { ScrollView, View, Text, Pressable, Alert } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  Alert,
+  AccessibilityInfo,
+} from "react-native";
 import { COLORS } from "@/constants/colors";
 import StatCard from "@/components/cards/StatCard";
 import { getRemainingBudget } from "@/utils/getRemainingBudget";
@@ -27,6 +34,8 @@ import { router } from "expo-router";
 import CategorySummary from "@/components/dashboard/CategorySummary";
 import SavingsProgressCard from "@/components/dashboard/SavingsProgressCard";
 import { sendLocalNotification } from "@/utils/notifications";
+import { LinearGradient } from "expo-linear-gradient";
+import { Feather } from "@expo/vector-icons";
 
 export default function Dashboard() {
   const {
@@ -167,92 +176,122 @@ export default function Dashboard() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView
+      <LinearGradient
+        colors={["#09090B", "#0B1115", "#09090B"]}
+        locations={[0, 0.5, 1]}
         style={{
           flex: 1,
-          backgroundColor: COLORS.background,
         }}
-        contentContainerStyle={{
-          padding: 24,
-          paddingBottom: 120,
-        }}
-        showsVerticalScrollIndicator={false}
       >
-        <View>
-          <Text
+        <ScrollView
+          style={{
+            flex: 1,
+          }}
+          contentContainerStyle={{
+            padding: 24,
+            paddingBottom: 120,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View
             style={{
-              fontSize: 16,
-              color: COLORS.textSecondary,
-              marginTop: 32,
+              marginTop: 28,
+              marginBottom: 24,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            Good Morning 👋
-          </Text>
+            <View>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: COLORS.textSecondary,
+                  letterSpacing: 1,
+                }}
+              >
+                WELCOME
+              </Text>
 
-          <Text
-            style={{
-              fontSize: 32,
-              fontWeight: "800",
-              color: COLORS.text,
-            }}
-          >
-            {fullName}
-          </Text>
-          <Pressable
-            onPress={handleResetApp}
-            style={{
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 12,
-              backgroundColor: "#991B1B",
-              width: 40,
-            }}
-          >
-            <Text
+              <Text
+                style={{
+                  fontSize: 32,
+                  fontWeight: "800",
+                  color: COLORS.text,
+                  marginTop: 4,
+                }}
+              >
+                {fullName}
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={handleResetApp}
               style={{
-                color: "white",
-                fontWeight: "600",
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+
+                backgroundColor: COLORS.card,
+
+                borderWidth: 1,
+                borderColor: COLORS.border,
+
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              🗑
-            </Text>
-          </Pressable>
-        </View>
-        <SemiBudgetGauge
-          remaining={remaining}
-          spent={todaysSpend}
-          dailyBudget={gaugeBudget}
-        />
-        <InsightCard
-          remaining={remaining}
-          dailyBudget={effectiveBudget}
-          debtCarryForward={debtCarryForward}
-        />
-        <SavingsProgressCard />
-        {/* <SummaryCard title="Saved" value={`₹${monthlySavings}`} /> */}
+              <Feather name="trash-2" size={18} color={COLORS.textSecondary} />
+            </Pressable>
+          </View>
+          <SemiBudgetGauge
+            remaining={remaining}
+            spent={todaysSpend}
+            dailyBudget={gaugeBudget}
+          />
+          <InsightCard
+            remaining={remaining}
+            dailyBudget={effectiveBudget}
+            debtCarryForward={debtCarryForward}
+          />
 
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 12,
-            marginBottom: 24,
-            marginTop: 14,
-          }}
-        >
-          <SummaryCard title="Today's Spend" value={`₹${todaysSpend}`} />
+          {/* <SummaryCard title="Saved" value={`₹${monthlySavings}`} /> */}
 
-          <SummaryCard title="Rollover" value={`₹${rollover}`} />
-          <SummaryCard title="Debt" value={`₹${debtCarryForward}`} />
-        </View>
-        <AddTransactionModal
-          visible={addExpenseVisible}
-          onClose={() => setAddExpenseVisible(false)}
-          onSubmit={(merchant, amount, category) => {
-            handleTransactionAttempt(amount, merchant, category);
-          }}
-        />
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 12,
+              marginBottom: 24,
+              marginTop: 14,
+            }}
+          >
+            <SummaryCard
+              title="Today's Spend"
+              value={`₹${todaysSpend}`}
+              accentColor="blue"
+            />
 
-        {/*<PrimaryButton
+            <SummaryCard
+              title="Rollover"
+              value={`₹${rollover}`}
+              accentColor="green"
+            />
+            <SummaryCard
+              title="Debt"
+              value={`₹${debtCarryForward}`}
+              accentColor="red"
+            />
+          </View>
+          <SavingsProgressCard />
+          <AddTransactionModal
+            visible={addExpenseVisible}
+            onClose={() => setAddExpenseVisible(false)}
+            onSubmit={(merchant, amount, category) => {
+              handleTransactionAttempt(amount, merchant, category);
+            }}
+          />
+
+          {/*<PrimaryButton
           title="Add 100"
           onPress={() =>
             handleTransactionAttempt(100,"Food","Food")
@@ -271,7 +310,7 @@ export default function Dashboard() {
           }
         /> */}
 
-        {/* <PrimaryButton
+          {/* <PrimaryButton
           title="Test Savings"
           onPress={() => addMonthlySavings(500)}
         />
@@ -283,65 +322,68 @@ export default function Dashboard() {
             })
           }
         /> */}
-        <PrimaryButton
+          {/* <PrimaryButton
           title="Test Notification"
           onPress={() =>
             sendLocalNotification("BudgeIt", "Notification system works!")
           }
-        />
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <Text
+        /> */}
+          <View
             style={{
-              color: COLORS.text,
-              fontSize: 22,
-              fontWeight: "700",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
               marginBottom: 16,
             }}
           >
-            Recent Transactions
-          </Text>
-          <Pressable onPress={() => router.push("/(tabs)/transactions")}>
             <Text
               style={{
-                color: COLORS.primary,
-                fontWeight: "600",
+                color: COLORS.text,
+                fontSize: 22,
+                fontWeight: "800",
+                letterSpacing: -0.5,
+                marginBottom: 1,
+                marginTop: 12,
               }}
             >
-              View All
+              Recent Transactions
             </Text>
-          </Pressable>
-        </View>
+            <Pressable onPress={() => router.push("/(tabs)/transactions")}>
+              <Text
+                style={{
+                  color: COLORS.primary,
+                  fontWeight: "700",
+                  top: 9,
+                }}
+              >
+                View All
+              </Text>
+            </Pressable>
+          </View>
 
-        {transactions.length === 0 ? (
-          <Text
-            style={{
-              color: COLORS.textSecondary,
-            }}
-          >
-            No transactions yet
-          </Text>
-        ) : (
-          transactions
-            .slice(0, 5)
-            .map((transaction) => (
-              <TransactionCard
-                key={transaction.id}
-                id={transaction.id}
-                merchant={transaction.merchant}
-                amount={transaction.amount}
-                category={transaction.category}
-                timestamp={transaction.timestamp}
-              />
-            ))
-        )}
-        {/* <Animated.View style={fabStyle}>
+          {transactions.length === 0 ? (
+            <Text
+              style={{
+                color: COLORS.textSecondary,
+              }}
+            >
+              No transactions yet
+            </Text>
+          ) : (
+            transactions
+              .slice(0, 5)
+              .map((transaction) => (
+                <TransactionCard
+                  key={transaction.id}
+                  id={transaction.id}
+                  merchant={transaction.merchant}
+                  amount={transaction.amount}
+                  category={transaction.category}
+                  timestamp={transaction.timestamp}
+                />
+              ))
+          )}
+          {/* <Animated.View style={fabStyle}>
           <PrimaryButton
             onPress={() => {
               setAddExpenseVisible(true);
@@ -350,44 +392,45 @@ export default function Dashboard() {
           />
         </Animated.View> */}
 
-        <CategorySummary />
+          <CategorySummary />
 
-        <DangerZoneModal
-          visible={dangerVisible}
-          transactionAmount={pendingTransaction?.amount ?? 0}
-          remainingBudget={remaining}
-          dailyBudget={dailyBudget}
-          onBorrowTomorrow={() => {
-            if (!pendingTransaction) return;
-            const overspent = Math.max(
-              pendingTransaction.amount - remaining,
-              0,
-            );
+          <DangerZoneModal
+            visible={dangerVisible}
+            transactionAmount={pendingTransaction?.amount ?? 0}
+            remainingBudget={remaining}
+            dailyBudget={dailyBudget}
+            onBorrowTomorrow={() => {
+              if (!pendingTransaction) return;
+              const overspent = Math.max(
+                pendingTransaction.amount - remaining,
+                0,
+              );
 
-            addDebt(overspent);
-            const reducedTomorrow = dailyBudget - overspent;
-            sendLocalNotification(
-              "⚠️ Budget Borrowed",
-              `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
-            );
+              addDebt(overspent);
+              const reducedTomorrow = dailyBudget - overspent;
+              sendLocalNotification(
+                "⚠️ Budget Borrowed",
+                `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
+              );
 
-            addTransaction({
-              id: Date.now().toString(),
-              merchant: pendingTransaction?.merchant ?? "Unknown",
-              amount: pendingTransaction?.amount ?? 0,
-              category: pendingTransaction?.category ?? "Unknown",
-              timestamp: Date.now(),
-              debtCreated: overspent,
-            });
-            setPendingTransaction(null);
-            setDangerVisible(false);
-          }}
-          onCancel={() => {
-            setPendingTransaction(null);
-            setDangerVisible(false);
-          }}
-        />
-      </ScrollView>
+              addTransaction({
+                id: Date.now().toString(),
+                merchant: pendingTransaction?.merchant ?? "Unknown",
+                amount: pendingTransaction?.amount ?? 0,
+                category: pendingTransaction?.category ?? "Unknown",
+                timestamp: Date.now(),
+                debtCreated: overspent,
+              });
+              setPendingTransaction(null);
+              setDangerVisible(false);
+            }}
+            onCancel={() => {
+              setPendingTransaction(null);
+              setDangerVisible(false);
+            }}
+          />
+        </ScrollView>
+      </LinearGradient>
       <FloatingNav onAddTransaction={() => setAddExpenseVisible(true)} />
     </View>
   );
