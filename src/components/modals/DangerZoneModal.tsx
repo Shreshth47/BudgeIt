@@ -1,12 +1,7 @@
-import {
-  Modal,
-  View,
-  Text,
-  Pressable,
-} from "react-native";
+import { Modal, View, Text, Pressable } from "react-native";
 
 import { COLORS } from "@/constants/colors";
-import { getOverSpentAmount } from '@/utils/overSpentAmount'
+import { getOverSpentAmount } from "@/utils/overSpentAmount";
 
 interface Props {
   visible: boolean;
@@ -27,27 +22,18 @@ export default function DangerZoneModal({
   onCancel,
   transactionAmount,
   remainingBudget,
-  onBorrowTomorrow, dailyBudget }: Props) {
-  const overspent =
-    transactionAmount -
-    remainingBudget;
-  const daysAffected =
-    Math.ceil(
-      overspent /
-      dailyBudget
-    );
+  onBorrowTomorrow,
+  dailyBudget,
+}: Props) {
+  const overspent = transactionAmount - remainingBudget;
+  const daysAffected = Math.ceil(overspent / dailyBudget);
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-    >
+    <Modal visible={visible} transparent animationType="fade">
       <View
         style={{
           flex: 1,
 
-          backgroundColor:
-            "rgba(0,0,0,0.8)",
+          backgroundColor: "rgba(0,0,0,0.8)",
 
           justifyContent: "center",
 
@@ -76,59 +62,105 @@ export default function DangerZoneModal({
           >
             ⚠️ Danger Zone
           </Text>
-          <Text
+          <View
             style={{
-              color: COLORS.text,
-              marginBottom: 8,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 10,
             }}
           >
-            Purchase: ₹{transactionAmount}
-          </Text>
+            <Text style={{ color: COLORS.textSecondary }}>Purchase</Text>
 
-          <Text
+            <Text style={{ color: COLORS.text }}>₹{transactionAmount}</Text>
+          </View>
+          <View
             style={{
-              color: COLORS.text,
-              marginBottom: 8,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 10,
             }}
           >
-            Available: ₹{remainingBudget}
-          </Text>
+            <Text style={{ color: COLORS.textSecondary }}>Available</Text>
 
-          <Text
-            style={{
-              color: COLORS.danger,
-              fontWeight: "700",
-              marginBottom: 24,
-            }}
-          >
-            Over Budget: ₹{overspent}
-          </Text>
-          <Text
-            style={{
-              color: COLORS.warning,
+            <Text style={{ color: COLORS.text }}>₹{remainingBudget}</Text>
+          </View>
 
-              marginBottom: 24,
-            }}
-          >
-            Tomorrow's allowance will be
-            reduced by ₹{overspent}
-          </Text>
-          <Text
+          <View
             style={{
-              color: COLORS.warning,
-              marginBottom: 24,
+              flexDirection: "row",
+              justifyContent: "space-between",
             }}
           >
-            This purchase will affect
-            the next {daysAffected} day 
-            {daysAffected > 1 ? "s" : ""}
-            of allowance.
-          </Text>
+            <Text style={{ color: COLORS.danger }}>Overspent</Text>
+
+            <Text
+              style={{
+                color: COLORS.danger,
+                fontWeight: "700",
+              }}
+            >
+              ₹{overspent}
+            </Text>
+          </View>
+          <View
+            style={{
+              backgroundColor: "rgba(245,158,11,0.08)",
+
+              borderRadius: 16,
+
+              padding: 16,
+
+              borderWidth: 1,
+
+              borderColor: "rgba(245,158,11,0.25)",
+
+              marginBottom: 20,
+              marginTop: 20,
+            }}
+          >
+            <Text
+              style={{
+                color: COLORS.warning,
+                fontWeight: "700",
+                marginBottom: 8,
+              }}
+            >
+              Impact
+            </Text>
+
+            <Text
+              style={{
+                color: COLORS.text,
+                lineHeight: 22,
+              }}
+            >
+              Your next{" "}
+              <Text
+                style={{
+                  color: COLORS.warning,
+                  fontWeight: "700",
+                }}
+              >
+                {daysAffected} day
+                {daysAffected > 1 ? "s" : ""}
+              </Text>{" "}
+              of allowance will be reduced by{" "}
+              <Text
+                style={{
+                  color: COLORS.warning,
+                  fontWeight: "700",
+                }}
+              >
+                ₹{overspent}
+              </Text>
+              .
+            </Text>
+          </View>
+          
           <Pressable
             onPress={onBorrowTomorrow}
             style={{
-              backgroundColor:
-                COLORS.warning,
+              backgroundColor: COLORS.warning,
 
               padding: 16,
 
@@ -146,19 +178,17 @@ export default function DangerZoneModal({
                 fontWeight: "700",
               }}
             >
-              Borrow From Tomorrow
+              Borrow ₹{`${overspent}`}
             </Text>
           </Pressable>
           <Pressable
             onPress={onCancel}
             style={{
-              backgroundColor:
-                COLORS.card,
+              backgroundColor: "#0B0C0F",
 
               borderWidth: 1,
 
-              borderColor:
-                COLORS.textSecondary,
+              borderColor: COLORS.textSecondary,
 
               padding: 16,
 
@@ -172,11 +202,11 @@ export default function DangerZoneModal({
                 textAlign: "center",
               }}
             >
-              I'll Be Careful
+              Cancel Purchase
             </Text>
           </Pressable>
         </View>
       </View>
     </Modal>
-  )
+  );
 }
