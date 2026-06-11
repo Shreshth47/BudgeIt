@@ -138,7 +138,7 @@ export const useDashboardStore = create<DashboardState>()(
             0,
           );
 
-          const { addNotification } = useNotificationStore();
+          const addNotification = useNotificationStore.getState().addNotification;
 
           console.log("BEFORE");
           console.log("todaysSpend:", state.todaysSpend);
