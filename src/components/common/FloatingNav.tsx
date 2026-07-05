@@ -49,7 +49,7 @@ export default function FloatingNav({ onAddTransaction }: Props) {
         elevation: 10,
       }}
     >
-      <Pressable onPress={() => router.push("/(tabs)/reports")}>
+      <Pressable onPress={() => router.push("/reports")}>
         <MaterialCommunityIcons
           name="chart-bar"
           size={22}

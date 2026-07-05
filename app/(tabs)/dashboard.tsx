@@ -37,6 +37,11 @@ import { sendLocalNotification } from "@/utils/notifications";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { testFirestore } from "@/services/userTest";
+import { createUserDocument, resetUserProfile } from "@/services/userService";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useTransactionStore } from "@/store/useTransactionStore";
+import { syncUserData } from "@/services/syncService";
 
 export default function Dashboard() {
   const {
@@ -59,8 +64,6 @@ export default function Dashboard() {
   const {
     todaysSpend,
     rollover,
-    addTransaction,
-    transactions,
     debtCarryForward,
     addDebt,
     simulateNextDay,
@@ -70,6 +73,8 @@ export default function Dashboard() {
     addMonthlySavings,
     checkAndAdvanceMonth,
   } = useDashboardStore();
+
+  const { transactions, addTransaction } = useTransactionStore();
 
   const effectiveBudget = getEffectiveBudget(
     dailyBudget,
@@ -173,7 +178,7 @@ export default function Dashboard() {
   const handleResetApp = () => {
     Alert.alert(
       "Reset BudgeIt",
-      "This will delete all onboarding and transaction data.",
+      "This will permanently erase your budgeting data and restart onboarding. Your account will remain logged in.",
       [
         {
           text: "Cancel",
@@ -183,10 +188,29 @@ export default function Dashboard() {
           text: "Reset",
           style: "destructive",
           onPress: async () => {
-            hasCompletedOnboarding: false;
-            await AsyncStorage.clear();
+            try {
+              const user = useAuthStore.getState().user;
 
-            router.replace("/onboarding/welcome");
+              if (!user) {
+                return;
+              }
+
+              // Reset cloud profile
+              await resetUserProfile(user.uid);
+
+              // Reset local stores
+              useOnBoardingStore.getState().clearOnboarding();
+
+              useDashboardStore.getState().resetDashboard();
+
+              useNotificationStore.getState().clearNotifications();
+
+              router.replace("/onboarding/welcome");
+            } catch (error) {
+              console.log(error);
+
+              Alert.alert("Reset Failed", "Unable to reset your account.");
+            }
           },
         },
       ],
@@ -312,6 +336,7 @@ export default function Dashboard() {
             />
           </View>
           <SavingsProgressCard />
+          <PrimaryButton title="Sync Now" onPress={syncUserData} />
           <AddTransactionModal
             visible={addExpenseVisible}
             onClose={() => setAddExpenseVisible(false)}

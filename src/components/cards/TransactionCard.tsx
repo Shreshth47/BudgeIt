@@ -1,5 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { useTransactionStore } from "@/store/useTransactionStore";
 import { getCategoryIcon } from "@/utils/getCategoryIcon";
 import { getTransactionDayLabel } from "@/utils/getTransactionDayLabel";
 import { isToday } from "@/utils/isToday";
@@ -26,9 +27,9 @@ export default function TransactionCard({
     hour: "2-digit",
     minute: "2-digit",
   });
-  const removeTransaction = useDashboardStore(
-    (state) => state.removeTransaction,
-  );
+  const removeTransaction = useTransactionStore(
+  (state) => state.removeTransaction
+);
   const handleDelete = () => {
     Alert.alert(
       "Delete Transaction",

@@ -9,9 +9,10 @@ import { useState } from "react";
 import AppInput from "@/components/inputs/AppInput";
 import { CATEGORIES } from "@/constants/categories";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTransactionStore } from "@/store/useTransactionStore";
 
 export default function Transactions() {
-  const transactions = useDashboardStore((state) => state.transactions);
+  const transactions = useTransactionStore((state) => state.transactions);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 

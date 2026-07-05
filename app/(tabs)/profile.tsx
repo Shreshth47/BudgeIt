@@ -10,6 +10,17 @@ import EditFinancialModal from "@/components/profile/EditFinancialModal";
 import PrimaryButton from "@/components/buttons/PrimaryButton";
 import { LinearGradient } from "expo-linear-gradient";
 
+import { Alert } from "react-native";
+import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { logout } from "@/services/authService";
+import { syncUserData } from "@/services/syncService";
+import { useTransactionStore } from "@/store/useTransactionStore";
+import { useNotificationStore } from "@/store/useNotificationStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useSyncStore } from "@/store/useSyncStore";
+
 export default function Profile() {
   const {
     fullName,
@@ -22,6 +33,22 @@ export default function Profile() {
   } = useOnBoardingStore();
 
   const { setField } = useOnBoardingStore();
+
+  const clearOnboarding = useOnBoardingStore((state) => state.clearOnboarding);
+
+  const resetDashboard = useDashboardStore((state) => state.resetDashboard);
+
+  const clearTransactions = useTransactionStore(
+    (state) => state.clearTransactions,
+  );
+
+  const clearNotifications = useNotificationStore(
+    (state) => state.clearNotifications,
+  );
+
+  const setUser = useAuthStore((state) => state.setUser);
+
+  const setProfileLoaded = useAuthStore((state) => state.setProfileLoaded);
 
   const [editVisible, setEditVisible] = useState(false);
 
@@ -40,6 +67,45 @@ export default function Profile() {
     fixedExpenses,
     savingsTarget,
   );
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            // Final cloud backup
+            await syncUserData();
+
+            // Firebase logout
+            await logout();
+
+            // Clear local persisted storage
+            await AsyncStorage.clear();
+
+            // Reset all stores
+            clearOnboarding();
+            resetDashboard();
+            clearTransactions();
+            clearNotifications();
+            useSyncStore.getState().clearDirtyFlags();
+
+            setUser(null);
+            setProfileLoaded(false);
+
+            router.replace("/auth/login");
+          } catch (error) {
+            console.log("Logout Error:", error);
+          }
+        },
+      },
+    ]);
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -193,6 +259,20 @@ export default function Profile() {
               setField("savingsTarget", savings);
             }}
           />
+          <Text
+            style={{
+              marginTop: 32,
+              marginBottom: 12,
+              fontSize: 12,
+              letterSpacing: 2,
+              fontWeight: "600",
+              color: COLORS.textSecondary,
+            }}
+          >
+            ACCOUNT
+          </Text>
+
+          <PrimaryButton title="Logout" onPress={handleLogout} />
         </ScrollView>
       </LinearGradient>
       <FloatingNav />

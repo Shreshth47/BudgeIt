@@ -1,4 +1,9 @@
 {
+  "compilerOptions": {
+    "paths": {
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
+    }
+  },
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
@@ -8,13 +13,12 @@
       "@/features/*": ["./src/features/*"],
       "@/store/*": ["./src/store/*"],
       "@/constants/*": ["./src/constants/*"],
-      "@/utils/*": ["./src/utils/*"]
+      "@/utils/*": ["./src/utils/*"],
+      "@/firebase/*": ["./src/firebase/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/providers/*": ["./src/providers/*"],
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }
