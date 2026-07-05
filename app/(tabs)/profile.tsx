@@ -1,7 +1,7 @@
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import { getDailyBudget } from "@/utils/getDailyBudget";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, TextStyle, View } from "react-native";
 import { COLORS } from "@/constants/colors";
 import ProfileItem from "@/components/profile/ProfileItem";
 import FloatingNav from "@/components/common/FloatingNav";
@@ -57,7 +57,7 @@ export default function Profile() {
     marginBottom: 12,
     fontSize: 12,
     letterSpacing: 2,
-    fontWeight: "600",
+    fontWeight: "400" as TextStyle['fontWeight'],
     color: COLORS.textSecondary,
   };
 
@@ -265,7 +265,7 @@ export default function Profile() {
               marginBottom: 12,
               fontSize: 12,
               letterSpacing: 2,
-              fontWeight: "600",
+              fontWeight: "400",
               color: COLORS.textSecondary,
             }}
           >
