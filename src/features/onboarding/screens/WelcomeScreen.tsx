@@ -31,10 +31,6 @@ export default function WelcomeScreen() {
         title="Let's Get Started"
         onPress={() => router.push("/onboarding/profile")}
       />
-      <PrimaryButton
-        title="Reset Storage"
-        onPress={() => clearAllData}
-      />
     </View>
   )
 }

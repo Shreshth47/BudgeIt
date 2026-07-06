@@ -21,6 +21,8 @@ interface DashboardState {
 
   lastActiveMonth: string;
 
+  clearDashboardLocal: () => void;
+
   getDashboardData: () => DashboardDocument;
 
   checkAndAdvanceMonth: () => void;
@@ -48,6 +50,24 @@ export const useDashboardStore = create<DashboardState>()(
       monthlySavings: 0,
 
       lastActiveMonth: `${new Date().getFullYear()}-${new Date().getMonth() + 1}`,
+
+      clearDashboardLocal: () => {
+        set({
+          todaysSpend: 0,
+
+          rollover: 0,
+
+          debtCarryForward: 0,
+
+          monthlySavings: 0,
+
+          lastActiveDate: new Date().toISOString().split("T")[0],
+
+          lastActiveMonth: `${new Date().getFullYear()}-${new Date().getMonth() + 1}`,
+        });
+
+        // NO markDashboardDirty()
+      },
 
       getDashboardData: (): DashboardDocument => {
         const state = get();

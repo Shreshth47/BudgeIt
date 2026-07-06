@@ -1,35 +1,19 @@
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 import { db } from "@/firebase/firebase";
 import { UserDocument } from "@/types/user";
+import { deleteAllTransactions } from "./transactionService";
 
 const USERS_COLLECTION = "users";
 
-export async function createUserDocument(
-  user: UserDocument
-) {
-  const ref = doc(
-    db,
-    USERS_COLLECTION,
-    user.uid
-  );
+export async function createUserDocument(user: UserDocument) {
+  const ref = doc(db, USERS_COLLECTION, user.uid);
 
   await setDoc(ref, user);
 }
 
-export async function getUserDocument(
-  uid: string
-) {
-  const ref = doc(
-    db,
-    USERS_COLLECTION,
-    uid
-  );
+export async function getUserDocument(uid: string) {
+  const ref = doc(db, USERS_COLLECTION, uid);
 
   const snapshot = await getDoc(ref);
 
@@ -42,22 +26,15 @@ export async function getUserDocument(
 
 export async function updateUserProfile(
   uid: string,
-  data: Partial<UserDocument>
+  data: Partial<UserDocument>,
 ) {
-  const ref = doc(
-    db,
-    USERS_COLLECTION,
-    uid
-  );
+  const ref = doc(db, USERS_COLLECTION, uid);
 
   await updateDoc(ref, data);
 }
 
-export async function hasCompletedOnboarding(
-  uid: string
-) {
-  const user =
-    await getUserDocument(uid);
+export async function hasCompletedOnboarding(uid: string) {
+  const user = await getUserDocument(uid);
 
   if (!user) {
     return false;
@@ -67,11 +44,9 @@ export async function hasCompletedOnboarding(
 }
 
 export async function resetUserProfile(uid: string) {
-  const ref = doc(
-    db,
-    USERS_COLLECTION,
-    uid
-  );
+  const ref = doc(db, USERS_COLLECTION, uid);
+
+  await deleteAllTransactions(uid);
 
   await updateDoc(ref, {
     fullName: "",
@@ -94,4 +69,3 @@ export async function resetUserProfile(uid: string) {
     updatedAt: Date.now(),
   });
 }
-

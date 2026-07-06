@@ -13,7 +13,7 @@ export async function initializeUser(user: User) {
     // Always clear local state before loading a user's data
     useOnBoardingStore.getState().clearOnboarding();
 
-    useDashboardStore.getState().resetDashboard();
+    useDashboardStore.getState().clearDashboardLocal();
 
     useNotificationStore.getState().clearNotifications();
     const profile = await getUserDocument(user.uid);

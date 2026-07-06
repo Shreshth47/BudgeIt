@@ -10,6 +10,7 @@ import AppInput from "@/components/inputs/AppInput";
 import { CATEGORIES } from "@/constants/categories";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTransactionStore } from "@/store/useTransactionStore";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function Transactions() {
   const transactions = useTransactionStore((state) => state.transactions);
@@ -41,161 +42,163 @@ export default function Transactions() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      <LinearGradient
-        colors={["#09090B", "#0B1115", "#09090B"]}
-        locations={[0, 0.5, 1]}
-        style={{
-          flex: 1,
-        }}
-      >
-        <ScrollView
+    <ProtectedRoute>
+      <View style={{ flex: 1 }}>
+        <LinearGradient
+          colors={["#09090B", "#0B1115", "#09090B"]}
+          locations={[0, 0.5, 1]}
           style={{
             flex: 1,
           }}
-          contentContainerStyle={{
-            padding: 24,
-            paddingBottom: 120,
-          }}
         >
-          <Text
+          <ScrollView
             style={{
-              color: COLORS.text,
-              fontSize: 32,
-              fontWeight: "700",
-              marginBottom: 24,
-              marginTop: 32,
+              flex: 1,
+            }}
+            contentContainerStyle={{
+              padding: 24,
+              paddingBottom: 120,
             }}
           >
-            Transactions
-          </Text>
-
-          <View
-            style={{
-              backgroundColor: COLORS.card,
-
-              borderRadius: 20,
-
-              padding: 20,
-
-              marginBottom: 24,
-            }}
-          >
-            <Text
-              style={{
-                color: COLORS.textSecondary,
-              }}
-            >
-              Total Recorded Spend
-            </Text>
-
             <Text
               style={{
                 color: COLORS.text,
-
                 fontSize: 32,
-
                 fontWeight: "700",
+                marginBottom: 24,
+                marginTop: 32,
               }}
             >
-              ₹{totalSpent}
+              Transactions
             </Text>
 
-            <Text
+            <View
               style={{
-                color: COLORS.textSecondary,
+                backgroundColor: COLORS.card,
+
+                borderRadius: 20,
+
+                padding: 20,
+
+                marginBottom: 24,
               }}
             >
-              {transactions.length} transactions
-            </Text>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{
-              marginBottom: 16,
-            }}
-          >
-            {["All", ...CATEGORIES].map((category) => (
-              <Pressable
-                key={category}
-                onPress={() => setSelectedCategory(category)}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                  marginRight: 8,
-
-                  backgroundColor:
-                    selectedCategory === category
-                      ? COLORS.primary
-                      : COLORS.card,
-                }}
-              >
-                <Text
-                  style={{
-                    color:
-                      selectedCategory === category ? "white" : COLORS.text,
-                  }}
-                >
-                  {category}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-
-          <AppInput
-            value={searchQuery}
-            placeholder="Search merchant..."
-            onChangeText={setSearchQuery}
-          />
-
-          {filteredTransactions.length === 0 && (
-            <Text
-              style={{
-                color: COLORS.textSecondary,
-                textAlign: "center",
-                marginTop: 40,
-              }}
-            >
-              No transactions found
-            </Text>
-          )}
-
-          {Object.entries(groupedTransactions).map(([group, items]) => (
-            <View key={group}>
               <Text
                 style={{
                   color: COLORS.textSecondary,
-
-                  fontSize: 14,
-
-                  fontWeight: "700",
-
-                  marginTop: 16,
-
-                  marginBottom: 12,
                 }}
               >
-                {group}
+                Total Recorded Spend
               </Text>
 
-              {items.map((transaction) => (
-                <TransactionCard
-                  key={transaction.id}
-                  id={transaction.id}
-                  merchant={transaction.merchant}
-                  amount={transaction.amount}
-                  category={transaction.category}
-                  timestamp={transaction.timestamp}
-                />
-              ))}
+              <Text
+                style={{
+                  color: COLORS.text,
+
+                  fontSize: 32,
+
+                  fontWeight: "700",
+                }}
+              >
+                ₹{totalSpent}
+              </Text>
+
+              <Text
+                style={{
+                  color: COLORS.textSecondary,
+                }}
+              >
+                {transactions.length} transactions
+              </Text>
             </View>
-          ))}
-        </ScrollView>
-      </LinearGradient>
-      <FloatingNav />
-    </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{
+                marginBottom: 16,
+              }}
+            >
+              {["All", ...CATEGORIES].map((category) => (
+                <Pressable
+                  key={category}
+                  onPress={() => setSelectedCategory(category)}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                    marginRight: 8,
+
+                    backgroundColor:
+                      selectedCategory === category
+                        ? COLORS.primary
+                        : COLORS.card,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color:
+                        selectedCategory === category ? "white" : COLORS.text,
+                    }}
+                  >
+                    {category}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <AppInput
+              value={searchQuery}
+              placeholder="Search merchant..."
+              onChangeText={setSearchQuery}
+            />
+
+            {filteredTransactions.length === 0 && (
+              <Text
+                style={{
+                  color: COLORS.textSecondary,
+                  textAlign: "center",
+                  marginTop: 40,
+                }}
+              >
+                No transactions found
+              </Text>
+            )}
+
+            {Object.entries(groupedTransactions).map(([group, items]) => (
+              <View key={group}>
+                <Text
+                  style={{
+                    color: COLORS.textSecondary,
+
+                    fontSize: 14,
+
+                    fontWeight: "700",
+
+                    marginTop: 16,
+
+                    marginBottom: 12,
+                  }}
+                >
+                  {group}
+                </Text>
+
+                {items.map((transaction) => (
+                  <TransactionCard
+                    key={transaction.id}
+                    id={transaction.id}
+                    merchant={transaction.merchant}
+                    amount={transaction.amount}
+                    category={transaction.category}
+                    timestamp={transaction.timestamp}
+                  />
+                ))}
+              </View>
+            ))}
+          </ScrollView>
+        </LinearGradient>
+        <FloatingNav />
+      </View>
+    </ProtectedRoute>
   );
 }
