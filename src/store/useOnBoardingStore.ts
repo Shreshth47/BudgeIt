@@ -14,6 +14,7 @@ interface OnboardingState {
   dateOfBirth: string;
   currency: string;
   upiId: string;
+  profilePhoto: string;
 
   currentBalance: number;
   monthlyIncome: number;
@@ -42,6 +43,7 @@ export const useOnBoardingStore = create<OnboardingState>()(
       dateOfBirth: "",
       currency: "INR",
       upiId: "",
+      profilePhoto: "",
 
       currentBalance: 0,
       monthlyIncome: 0,
@@ -66,6 +68,7 @@ export const useOnBoardingStore = create<OnboardingState>()(
           dateOfBirth: state.dateOfBirth,
           currency: state.currency,
           upiId: state.upiId,
+          profilePhoto: state.profilePhoto,
 
           currentBalance: state.currentBalance,
           monthlyIncome: state.monthlyIncome,

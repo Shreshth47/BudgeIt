@@ -55,6 +55,7 @@ export async function resetUserProfile(uid: string) {
     dateOfBirth: "",
     currency: "INR",
     upiId: "",
+    profilePhoto: "",
 
     currentBalance: 0,
     monthlyIncome: 0,

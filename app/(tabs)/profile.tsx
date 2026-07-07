@@ -1,7 +1,7 @@
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import { getDailyBudget } from "@/utils/getDailyBudget";
-import { ScrollView, Text, TextStyle, View } from "react-native";
+import { Pressable, ScrollView, Text, TextStyle, View } from "react-native";
 import { COLORS } from "@/constants/colors";
 import ProfileItem from "@/components/profile/ProfileItem";
 import FloatingNav from "@/components/common/FloatingNav";
@@ -24,12 +24,17 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ProfileRow from "@/components/profile/ProfileRow";
 import { resetUserProfile } from "@/services/userService";
 import EditProfileModal from "@/components/profile/EditProfileModal";
+import { Image } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import { Feather } from "@expo/vector-icons";
 
 export default function Profile() {
   const {
     fullName,
     dateOfBirth,
     upiId,
+    profilePhoto,
     monthlyIncome,
     secondaryIncome,
     savingsTarget,
@@ -56,6 +61,59 @@ export default function Profile() {
 
   const [editVisible, setEditVisible] = useState(false);
   const [editProfileVisible, setEditProfileVisible] = useState(false);
+
+  const pickProfileImage = async () => {
+    try {
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission Required",
+          "Please allow gallery access to change your profile picture.",
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (result.canceled) return;
+
+      const manipulated = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [
+          {
+            resize: {
+              width: 300,
+              height: 300,
+            },
+          },
+        ],
+        {
+          compress: 0.6,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        },
+      );
+
+      if (!manipulated.base64) return;
+
+      const imageUri = `data:image/jpeg;base64,${manipulated.base64}`;
+
+      setField("profilePhoto", imageUri);
+
+      useSyncStore.getState().markProfileDirty();
+    } catch (error) {
+      console.log(error);
+
+      Alert.alert("Image Error", "Unable to update profile picture.");
+    }
+  };
 
   const sectionStyle = {
     marginTop: 28,
@@ -183,28 +241,40 @@ export default function Profile() {
                 marginBottom: 30,
               }}
             >
-              <View
-                style={{
-                  width: 110,
-                  height: 110,
-                  borderRadius: 55,
-                  backgroundColor: COLORS.primary,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  borderWidth: 3,
-                  borderColor: "#134E4A",
-                }}
-              >
-                <Text
+              <Pressable onPress={pickProfileImage}>
+                <View
                   style={{
-                    color: "#FFF",
-                    fontSize: 40,
-                    fontWeight: "800",
+                    width: 110,
+                    height: 110,
+                    borderRadius: 55,
+                    overflow: "hidden",
+                    backgroundColor: COLORS.primary,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderWidth: 3,
+                    borderColor: "#134E4A",
                   }}
                 >
-                  {fullName?.charAt(0).toUpperCase()}
-                </Text>
-
+                  {profilePhoto ? (
+                    <Image
+                      source={{ uri: profilePhoto }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                      }}
+                    />
+                  ) : (
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 40,
+                        fontWeight: "800",
+                      }}
+                    >
+                      {fullName.charAt(0).toUpperCase()}
+                    </Text>
+                  )}
+                </View>
                 <View
                   style={{
                     position: "absolute",
@@ -220,22 +290,16 @@ export default function Profile() {
                     borderColor: COLORS.border,
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                    }}
-                  >
-                    📷
-                  </Text>
+                  <Feather name="camera" size={16} color={COLORS.primary} />
                 </View>
-              </View>
+              </Pressable>
 
               <Text
                 style={{
                   color: COLORS.text,
                   fontSize: 28,
                   fontWeight: "800",
-                  marginTop: 18,
+                  marginTop: 8,
                 }}
               >
                 {fullName}
@@ -269,7 +333,7 @@ export default function Profile() {
                   fontWeight: "600",
                 }}
               >
-                TODAY'S ALLOWANCE
+                YOUR DAILY ALLOWANCE
               </Text>
 
               <Text
@@ -291,7 +355,7 @@ export default function Profile() {
                   fontWeight: "600",
                 }}
               >
-                You're on track with your financial goals
+                Based on your financial goals.
               </Text>
             </View>
 
