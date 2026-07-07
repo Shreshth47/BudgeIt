@@ -330,7 +330,7 @@ export default function Dashboard() {
               />
             </View>
             <SavingsProgressCard />
-            <PrimaryButton title="Sync Now" onPress={syncUserData} />
+            
             <AddTransactionModal
               visible={addExpenseVisible}
               onClose={() => setAddExpenseVisible(false)}
@@ -441,6 +441,7 @@ export default function Dashboard() {
         </Animated.View> */}
 
             <CategorySummary />
+            <PrimaryButton title="Sync Now" onPress={syncUserData} />
 
             <DangerZoneModal
               visible={dangerVisible}

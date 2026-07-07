@@ -21,6 +21,9 @@ import { useNotificationStore } from "@/store/useNotificationStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useSyncStore } from "@/store/useSyncStore";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import ProfileRow from "@/components/profile/ProfileRow";
+import { resetUserProfile } from "@/services/userService";
+import EditProfileModal from "@/components/profile/EditProfileModal";
 
 export default function Profile() {
   const {
@@ -52,14 +55,16 @@ export default function Profile() {
   const setProfileLoaded = useAuthStore((state) => state.setProfileLoaded);
 
   const [editVisible, setEditVisible] = useState(false);
+  const [editProfileVisible, setEditProfileVisible] = useState(false);
 
   const sectionStyle = {
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: 28,
+    marginBottom: 14,
     fontSize: 12,
-    letterSpacing: 2,
-    fontWeight: "400" as TextStyle["fontWeight"],
+    letterSpacing: 1.5,
+    fontWeight: "600" as TextStyle["fontWeight"],
     color: COLORS.textSecondary,
+    marginLeft: 4,
   };
 
   const { debtCarryForward, monthlySavings } = useDashboardStore();
@@ -108,6 +113,50 @@ export default function Profile() {
     ]);
   };
 
+  const handleResetApp = () => {
+    Alert.alert(
+      "Reset BudgeIt",
+      "This will permanently erase your budgeting data and restart onboarding. Your account will remain logged in.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const user = useAuthStore.getState().user;
+
+              if (!user) {
+                return;
+              }
+
+              // Reset cloud profile
+              await resetUserProfile(user.uid);
+
+              // Reset local stores
+              useOnBoardingStore.getState().clearOnboarding();
+
+              useDashboardStore.getState().resetDashboard();
+
+              useTransactionStore.getState().clearTransactions();
+
+              useNotificationStore.getState().clearNotifications();
+
+              router.replace("/onboarding/welcome");
+            } catch (error) {
+              console.log(error);
+
+              Alert.alert("Reset Failed", "Unable to reset your account.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <ProtectedRoute>
       <View style={{ flex: 1 }}>
@@ -130,39 +179,63 @@ export default function Profile() {
             <View
               style={{
                 alignItems: "center",
-                marginBottom: 24,
                 marginTop: 32,
+                marginBottom: 30,
               }}
             >
               <View
                 style={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: 50,
-                  borderWidth: 3,
-                  borderColor: "rgba(14,164,130,1)",
+                  width: 110,
+                  height: 110,
+                  borderRadius: 55,
                   backgroundColor: COLORS.primary,
                   justifyContent: "center",
                   alignItems: "center",
+                  borderWidth: 3,
+                  borderColor: "#134E4A",
                 }}
               >
                 <Text
                   style={{
-                    color: "white",
-                    fontSize: 36,
-                    fontWeight: "700",
+                    color: "#FFF",
+                    fontSize: 40,
+                    fontWeight: "800",
                   }}
                 >
-                  {fullName?.charAt(0)}
+                  {fullName?.charAt(0).toUpperCase()}
                 </Text>
+
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: 4,
+                    right: 4,
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: COLORS.card,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: COLORS.border,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                    }}
+                  >
+                    📷
+                  </Text>
+                </View>
               </View>
 
               <Text
                 style={{
                   color: COLORS.text,
-                  fontSize: 24,
-                  fontWeight: "700",
-                  marginTop: 12,
+                  fontSize: 28,
+                  fontWeight: "800",
+                  marginTop: 18,
                 }}
               >
                 {fullName}
@@ -170,48 +243,40 @@ export default function Profile() {
               <Text
                 style={{
                   color: COLORS.textSecondary,
-                  marginTop: 4,
-                  fontSize: 14,
+                  marginTop: 6,
+                  fontSize: 15,
                 }}
               >
-                BudgeIt Member
+                Building Better Spending Habits
               </Text>
             </View>
             <View
               style={{
                 backgroundColor: COLORS.card,
-
-                borderRadius: 24,
-
+                borderRadius: 26,
                 borderWidth: 1,
-
                 borderColor: COLORS.border,
-
-                padding: 24,
-
-                marginBottom: 24,
+                paddingVertical: 22,
+                paddingHorizontal: 24,
+                marginBottom: 22,
               }}
             >
               <Text
                 style={{
                   color: COLORS.textSecondary,
-
-                  fontSize: 12,
-
-                  letterSpacing: 2,
+                  fontSize: 13,
+                  letterSpacing: 1,
+                  fontWeight: "600",
                 }}
               >
-                DAILY ALLOWANCE
+                TODAY'S ALLOWANCE
               </Text>
 
               <Text
                 style={{
                   color: COLORS.text,
-
-                  fontSize: 42,
-
+                  fontSize: 46,
                   fontWeight: "800",
-
                   marginTop: 8,
                 }}
               >
@@ -221,26 +286,126 @@ export default function Profile() {
               <Text
                 style={{
                   color: COLORS.primary,
-
-                  marginTop: 8,
-
+                  marginTop: 6,
+                  fontSize: 15,
                   fontWeight: "600",
                 }}
               >
-                Based on your current goals
+                You're on track with your financial goals
               </Text>
             </View>
-            <Text style={sectionStyle}>PERSONAL DETAILS</Text>
-            <ProfileItem label="Date of Birth" value={dateOfBirth} />
 
-            <ProfileItem label="UPI ID" value={upiId || "Not Set"} />
+            <Text style={sectionStyle}>PERSONAL INFORMATION</Text>
+
+            <ProfileRow
+              icon="user"
+              title="Full Name"
+              value={fullName}
+              onPress={() => setEditProfileVisible(true)}
+            />
+
+            <ProfileRow
+              icon="calendar"
+              title="Date of Birth"
+              value={dateOfBirth}
+              onPress={() => setEditProfileVisible(true)}
+            />
+
+            <ProfileRow
+              icon="credit-card"
+              title="UPI ID"
+              value={upiId || "Not Set"}
+              onPress={() => setEditProfileVisible(true)}
+            />
+            <EditProfileModal
+              visible={editProfileVisible}
+              fullName={fullName}
+              dateOfBirth={dateOfBirth}
+              upiId={upiId}
+              onClose={() => setEditProfileVisible(false)}
+              onSave={(name, dob, upi) => {
+                setField("fullName", name);
+
+                setField("dateOfBirth", dob);
+
+                setField("upiId", upi);
+
+                useSyncStore.getState().markProfileDirty();
+              }}
+            />
+
             <Text style={sectionStyle}>FINANCIAL OVERVIEW</Text>
 
-            <ProfileItem label="Daily Budget" value={`₹${dailyBudget}`} />
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 24,
+              }}
+            >
+              <View
+                style={{
+                  width: "48%",
+                  backgroundColor: COLORS.card,
+                  borderRadius: 20,
+                  padding: 18,
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+                }}
+              >
+                <Text
+                  style={{
+                    color: COLORS.textSecondary,
+                    fontSize: 12,
+                  }}
+                >
+                  SAVINGS
+                </Text>
 
-            <ProfileItem label="Current Savings" value={`₹${monthlySavings}`} />
+                <Text
+                  style={{
+                    color: COLORS.success,
+                    fontSize: 28,
+                    fontWeight: "800",
+                    marginTop: 10,
+                  }}
+                >
+                  ₹{monthlySavings}
+                </Text>
+              </View>
 
-            <ProfileItem label="Current Debt" value={`₹${debtCarryForward}`} />
+              <View
+                style={{
+                  width: "48%",
+                  backgroundColor: COLORS.card,
+                  borderRadius: 20,
+                  padding: 18,
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+                }}
+              >
+                <Text
+                  style={{
+                    color: COLORS.textSecondary,
+                    fontSize: 12,
+                  }}
+                >
+                  DEBT
+                </Text>
+
+                <Text
+                  style={{
+                    color:
+                      debtCarryForward > 0 ? COLORS.danger : COLORS.success,
+                    fontSize: 28,
+                    fontWeight: "800",
+                    marginTop: 10,
+                  }}
+                >
+                  ₹{debtCarryForward}
+                </Text>
+              </View>
+            </View>
 
             <PrimaryButton
               title="Update Financial Goals"
@@ -261,20 +426,21 @@ export default function Profile() {
                 setField("savingsTarget", savings);
               }}
             />
-            <Text
-              style={{
-                marginTop: 32,
-                marginBottom: 12,
-                fontSize: 12,
-                letterSpacing: 2,
-                fontWeight: "400",
-                color: COLORS.textSecondary,
-              }}
-            >
-              ACCOUNT
-            </Text>
+            <Text style={sectionStyle}>ACCOUNT</Text>
 
-            <PrimaryButton title="Logout" onPress={handleLogout} />
+            <ProfileRow
+              icon="refresh-ccw"
+              title="Reset Account"
+              value=""
+              onPress={handleResetApp}
+            />
+
+            <ProfileRow
+              icon="log-out"
+              title="Logout"
+              value=""
+              onPress={handleLogout}
+            />
           </ScrollView>
         </LinearGradient>
         <FloatingNav />
