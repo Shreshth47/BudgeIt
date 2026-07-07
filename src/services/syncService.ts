@@ -7,6 +7,8 @@ import { uploadDashboard } from "./dashboardService";
 import { uploadTransactions } from "./transactionService";
 import { uploadProfile } from "./profileService";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
+import { uploadNotifications } from "./notificationService";
+import { useNotificationStore } from "@/store/useNotificationStore";
 
 export async function syncUserData() {
   const user = useAuthStore.getState().user;
@@ -15,13 +17,18 @@ export async function syncUserData() {
     return;
   }
 
-  const { profileDirty, dashboardDirty, transactionsDirty } =
-    useSyncStore.getState();
+  const {
+    profileDirty,
+    dashboardDirty,
+    transactionsDirty,
+    notificationsDirty,
+  } = useSyncStore.getState();
 
   console.log("========== SYNC ==========");
   console.log("Profile:", profileDirty);
   console.log("Dashboard:", dashboardDirty);
   console.log("Transactions:", transactionsDirty);
+  console.log("Notifications:", notificationsDirty);
 
   try {
     if (dashboardDirty) {
@@ -46,6 +53,13 @@ export async function syncUserData() {
         uid: user.uid,
         email: user.email ?? "",
       });
+    }
+
+    if (notificationsDirty) {
+      await uploadNotifications(
+        user.uid,
+        useNotificationStore.getState().notifications,
+      );
     }
 
     useSyncStore.getState().clearDirtyFlags();

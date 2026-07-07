@@ -9,6 +9,12 @@ interface SyncState {
 
   isSyncing: boolean;
 
+  notificationsDirty: boolean;
+
+  markNotificationsDirty: () => void;
+
+  clearNotificationsDirty: () => void;
+
   markProfileDirty: () => void;
 
   markDashboardDirty: () => void;
@@ -29,6 +35,18 @@ export const useSyncStore = create<SyncState>((set) => ({
 
   isSyncing: false,
 
+  notificationsDirty: false,
+
+  markNotificationsDirty: () =>
+    set({
+      notificationsDirty: true,
+    }),
+
+  clearNotificationsDirty: () =>
+    set({
+      notificationsDirty: false,
+    }),
+
   markProfileDirty: () =>
     set({
       profileDirty: true,
@@ -47,10 +65,9 @@ export const useSyncStore = create<SyncState>((set) => ({
   clearDirtyFlags: () =>
     set({
       profileDirty: false,
-
       dashboardDirty: false,
-
       transactionsDirty: false,
+      notificationsDirty: false,
     }),
 
   setSyncing: (value) =>

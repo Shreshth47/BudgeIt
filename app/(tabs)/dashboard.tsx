@@ -155,7 +155,7 @@ export default function Dashboard() {
 
         read: false,
 
-        type: "debt",
+        type: "danger",
       });
     }
   };
@@ -466,7 +466,7 @@ export default function Dashboard() {
                   message: `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
                   timestamp: Date.now(),
                   read: false,
-                  type: "debt",
+                  type: "danger",
                 });
 
                 addTransaction({

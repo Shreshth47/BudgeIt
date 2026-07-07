@@ -7,6 +7,7 @@ import { useNotificationStore } from "@/store/useNotificationStore";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import { initializeDashboard } from "./startupDashboardService";
 import { initializeTransactions } from "./startupTransactionService";
+import { initializeNotifications } from "./startupNotificationService";
 
 export async function initializeUser(user: User) {
   try {
@@ -54,7 +55,9 @@ export async function initializeUser(user: User) {
     );
 
     await initializeTransactions(user);
+    await initializeNotifications(user);
     await initializeDashboard(user);
+    
 
     useAuthStore.getState().setProfileLoaded(true);
   } catch (error) {

@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
 import { UserDocument } from "@/types/user";
 import { deleteAllTransactions } from "./transactionService";
+import { deleteAllNotifications } from "./notificationService";
 
 const USERS_COLLECTION = "users";
 
@@ -47,6 +48,7 @@ export async function resetUserProfile(uid: string) {
   const ref = doc(db, USERS_COLLECTION, uid);
 
   await deleteAllTransactions(uid);
+  await deleteAllNotifications(uid);
 
   await updateDoc(ref, {
     fullName: "",

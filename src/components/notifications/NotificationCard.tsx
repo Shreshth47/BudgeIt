@@ -1,19 +1,17 @@
 import { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { COLORS } from "@/constants/colors";
 
+import { Alert } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
-import { Alert } from "react-native";
 
-import {
-  AppNotification,
-  useNotificationStore,
-} from "@/store/useNotificationStore";
+import { useNotificationStore } from "@/store/useNotificationStore";
+import { AppNotification } from "@/types/Notification";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -62,7 +60,7 @@ export default function NotificationCard({ notification }: Props) {
           color: COLORS.warning,
         };
 
-      case "debt":
+      case "danger":
         return {
           icon: "trending-down",
           color: COLORS.danger,
@@ -91,7 +89,7 @@ export default function NotificationCard({ notification }: Props) {
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => deleteNotification(notification.id),
+        onPress: () => removeNotification(notification.id),
       },
     ]);
   };
@@ -105,10 +103,9 @@ export default function NotificationCard({ notification }: Props) {
     minute: "2-digit",
   });
 
-  const deleteNotification = useNotificationStore(
-    (state) => state.deleteNotification,
+  const removeNotification = useNotificationStore(
+    (state) => state.removeNotification,
   );
-
   return (
     <Animated.View
       layout={LinearTransition.springify().damping(50).stiffness(300)}
@@ -181,7 +178,10 @@ export default function NotificationCard({ notification }: Props) {
         </Text>
 
         {expanded && (
-          <Animated.View entering={FadeIn.duration(300)} exiting={FadeOut.duration(100)}>
+          <Animated.View
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(100)}
+          >
             <Text
               style={{
                 color: COLORS.text,
