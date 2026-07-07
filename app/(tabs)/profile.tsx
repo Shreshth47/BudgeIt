@@ -28,6 +28,7 @@ import { Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Feather } from "@expo/vector-icons";
+import EditBioModal from "@/components/profile/EditBioModal";
 
 export default function Profile() {
   const {
@@ -35,6 +36,7 @@ export default function Profile() {
     dateOfBirth,
     upiId,
     profilePhoto,
+    bio,
     monthlyIncome,
     secondaryIncome,
     savingsTarget,
@@ -61,6 +63,7 @@ export default function Profile() {
 
   const [editVisible, setEditVisible] = useState(false);
   const [editProfileVisible, setEditProfileVisible] = useState(false);
+  const [editBioVisible, setEditBioVisible] = useState(false);
 
   const pickProfileImage = async () => {
     try {
@@ -304,15 +307,35 @@ export default function Profile() {
               >
                 {fullName}
               </Text>
-              <Text
+              <Pressable
+                onPress={() => setEditBioVisible(true)}
                 style={{
-                  color: COLORS.textSecondary,
-                  marginTop: 6,
-                  fontSize: 15,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 8,
                 }}
               >
-                Building Better Spending Habits
-              </Text>
+                <Text
+                  style={{
+                    color: COLORS.textSecondary,
+                    fontSize: 15,
+                    fontStyle: "italic",
+                    textAlign: "center",
+                    maxWidth: 250,
+                  }}
+                >
+                  {bio || "Tap to add a bio"}
+                </Text>
+
+                <Feather
+                  name="edit-2"
+                  size={14}
+                  color={COLORS.textSecondary}
+                  style={{
+                    marginLeft: 8,
+                  }}
+                />
+              </Pressable>
             </View>
             <View
               style={{
@@ -380,6 +403,17 @@ export default function Profile() {
               title="UPI ID"
               value={upiId || "Not Set"}
               onPress={() => setEditProfileVisible(true)}
+            />
+
+            <EditBioModal
+              visible={editBioVisible}
+              bio={bio}
+              onClose={() => setEditBioVisible(false)}
+              onSave={(newBio) => {
+                setField("bio", newBio);
+
+                useSyncStore.getState().markProfileDirty();
+              }}
             />
             <EditProfileModal
               visible={editProfileVisible}

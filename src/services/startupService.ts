@@ -33,6 +33,8 @@ export async function initializeUser(user: User) {
 
     onboarding.setField("profilePhoto", profile.profilePhoto ?? "");
 
+    onboarding.setField("bio", profile.bio ?? "");
+
     onboarding.setField("currency", profile.currency);
 
     onboarding.setField("upiId", profile.upiId);

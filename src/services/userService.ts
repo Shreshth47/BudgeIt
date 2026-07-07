@@ -56,19 +56,15 @@ export async function resetUserProfile(uid: string) {
     currency: "INR",
     upiId: "",
     profilePhoto: "",
-
+    bio: "",
     currentBalance: 0,
     monthlyIncome: 0,
     secondaryIncome: 0,
-
     fixedExpenses: [],
-
     savingsTarget: 0,
     emergencyFundGoal: 0,
     overrideDailyLimit: null,
-
     hasCompletedOnboarding: false,
-
     updatedAt: Date.now(),
   });
 }

@@ -15,6 +15,8 @@ export interface UserDocument {
 
   profilePhoto: string;
 
+  bio: string;
+
   currency: string;
 
   upiId: string;
