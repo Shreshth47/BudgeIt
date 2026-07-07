@@ -48,6 +48,7 @@ export default function AddTransactionModal({
           flex: 1,
           justifyContent: "flex-end",
           backgroundColor: "rgba(0,0,0,0.5)",
+          position: "fixed"
         }}
       >
         <View

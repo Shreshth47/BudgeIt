@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserDocument } from "@/types/user";
 
 interface FixedExpense {
   id: string;
@@ -25,6 +26,8 @@ interface OnboardingState {
   overrideDailyLimit: number | null;
 
   hasCompletedOnboarding: boolean;
+  getProfileData: () => UserDocument;
+  clearOnboarding: () => void;
 
   setField: (field: string, value: any) => void;
   addExpense: (expense: FixedExpense) => void;
@@ -34,7 +37,7 @@ interface OnboardingState {
 
 export const useOnBoardingStore = create<OnboardingState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       fullName: "",
       dateOfBirth: "",
       currency: "INR",
@@ -51,6 +54,55 @@ export const useOnBoardingStore = create<OnboardingState>()(
       overrideDailyLimit: null,
 
       hasCompletedOnboarding: false,
+
+      getProfileData: (): UserDocument => {
+        const state = get();
+
+        return {
+          uid: "",
+          email: "",
+
+          fullName: state.fullName,
+          dateOfBirth: state.dateOfBirth,
+          currency: state.currency,
+          upiId: state.upiId,
+
+          currentBalance: state.currentBalance,
+          monthlyIncome: state.monthlyIncome,
+          secondaryIncome: state.secondaryIncome,
+
+          fixedExpenses: state.fixedExpenses,
+
+          savingsTarget: state.savingsTarget,
+          emergencyFundGoal: state.emergencyFundGoal,
+          overrideDailyLimit: state.overrideDailyLimit,
+
+          hasCompletedOnboarding: state.hasCompletedOnboarding,
+
+          createdAt: 0,
+          updatedAt: Date.now(),
+        };
+      },
+
+      clearOnboarding: () =>
+        set({
+          fullName: "",
+          dateOfBirth: "",
+          currency: "INR",
+          upiId: "",
+
+          currentBalance: 0,
+          monthlyIncome: 0,
+          secondaryIncome: 0,
+
+          fixedExpenses: [],
+
+          savingsTarget: 0,
+          emergencyFundGoal: 0,
+          overrideDailyLimit: null,
+
+          hasCompletedOnboarding: false,
+        }),
 
       setField: (field, value) =>
         set((state) => ({

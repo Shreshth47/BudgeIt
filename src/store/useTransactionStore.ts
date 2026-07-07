@@ -1,0 +1,75 @@
+import { create } from "zustand";
+import { useDashboardStore } from "./useDashboardStore";
+import { isToday } from "@/utils/isToday";
+import { Transaction } from "@/types/Transaction";
+import { useSyncStore } from "./useSyncStore";
+
+interface TransactionState {
+  transactions: Transaction[];
+
+  addTransaction: (transaction: Transaction) => void;
+
+  removeTransaction: (id: string) => void;
+
+  setTransactions: (transactions: Transaction[]) => void;
+
+  clearTransactions: () => void;
+}
+
+export const useTransactionStore = create<TransactionState>((set, get) => ({
+  transactions: [],
+
+  addTransaction: (transaction) => {
+    set((state) => ({
+      transactions: [transaction, ...state.transactions],
+    }));
+
+    useSyncStore.getState().markTransactionsDirty();
+
+    useSyncStore.getState().markDashboardDirty();
+
+    useDashboardStore.setState((state) => ({
+      todaysSpend: state.todaysSpend + transaction.amount,
+    }));
+  },
+
+  removeTransaction: (id) => {
+    const tx = get().transactions.find((t) => t.id === id);
+
+    if (!tx) {
+      return;
+    }
+
+    // Safety: only today's transactions can be deleted
+    if (!isToday(tx.timestamp)) {
+      return;
+    }
+
+    set((state) => ({
+      transactions: state.transactions.filter((t) => t.id !== id),
+    }));
+
+    useSyncStore.getState().markTransactionsDirty();
+
+    useSyncStore.getState().markDashboardDirty();
+
+    useDashboardStore.setState((state) => ({
+      todaysSpend: state.todaysSpend - tx.amount,
+
+      debtCarryForward: Math.max(
+        state.debtCarryForward - (tx.debtCreated ?? 0),
+        0,
+      ),
+    }));
+  },
+
+  setTransactions: (transactions) =>
+    set({
+      transactions,
+    }),
+
+  clearTransactions: () =>
+    set({
+      transactions: [],
+    }),
+}));

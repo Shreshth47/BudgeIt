@@ -8,6 +8,7 @@ import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import SavingsProgressCard from "@/components/dashboard/SavingsProgressCard";
 import CategoryBarChart from "@/components/reports/CategoryBarChart";
 import { LinearGradient } from "expo-linear-gradient";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function Reports() {
   const transactions = useDashboardStore((state) => state.transactions);
@@ -66,156 +67,159 @@ export default function Reports() {
   const chartData = Object.values(categoryTotals);
 
   return (
-    <View style={{ flex: 1 }}>
-      <LinearGradient
-              colors={["#09090B", "#0B1115", "#09090B"]}
-              locations={[0, 0.5, 1]}
+    <ProtectedRoute>
+      <View style={{ flex: 1 }}>
+        <LinearGradient
+          colors={["#09090B", "#0B1115", "#09090B"]}
+          locations={[0, 0.5, 1]}
+          style={{
+            flex: 1,
+          }}
+        >
+          <ScrollView
+            style={{
+              flex: 1,
+            }}
+            contentContainerStyle={{
+              padding: 24,
+              paddingBottom: 120,
+            }}
+          >
+            <Text
               style={{
-                flex: 1,
+                color: COLORS.text,
+                fontSize: 32,
+                fontWeight: "700",
+                marginTop: 32,
+                marginBottom: 24,
               }}
             >
-      <ScrollView
-        style={{
-          flex: 1,
-        }}
-        contentContainerStyle={{
-          padding: 24,
-          paddingBottom: 120,
-        }}
-      >
-        <Text
-          style={{
-            color: COLORS.text,
-            fontSize: 32,
-            fontWeight: "700",
-            marginTop: 32,
-            marginBottom: 24,
-          }}
-        >
-          Reports
-        </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 12,
-            marginBottom: 12,
-          }}
-        >
-          <SummaryCard title="Spent" value={`₹${totalSpent}`} />
-
-          <SummaryCard title="Txns" value={`${totalTransactions}`} />
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 12,
-            marginBottom: 12,
-          }}
-        >
-          <SummaryCard title="Avg Txn" value={`₹${averageTransaction}`} />
-
-          <SummaryCard title="Top Cat" value={topCategory} />
-        </View>
-        <CategoryBarChart labels={chartLabels} data={chartData} />
-
-        <View
-          style={{
-            backgroundColor: COLORS.card,
-            padding: 20,
-            borderRadius: 20,
-            marginBottom: 24,
-          }}
-        >
-          <Text
-            style={{
-              color: COLORS.textSecondary,
-              marginBottom: 8,
-            }}
-          >
-            Top Merchant
-          </Text>
-
-          <Text
-            style={{
-              color: COLORS.text,
-              fontSize: 24,
-              fontWeight: "700",
-            }}
-          >
-            {topMerchant}
-          </Text>
-        </View>
-        <Text
-          style={{
-            color: COLORS.text,
-            fontSize: 22,
-            fontWeight: "700",
-            marginBottom: 16,
-          }}
-        >
-          Category Breakdown
-        </Text>
-        {sortedCategories.map(([category, amount]) => {
-          const percentage = totalSpent === 0 ? 0 : (amount / totalSpent) * 100;
-
-          return (
+              Reports
+            </Text>
             <View
-              key={category}
               style={{
-                backgroundColor: COLORS.card,
-                padding: 16,
-                borderRadius: 16,
+                flexDirection: "row",
+                gap: 12,
                 marginBottom: 12,
               }}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                }}
-              >
-                <Text
-                  style={{
-                    color: COLORS.text,
-                    fontWeight: "600",
-                  }}
-                >
-                  {category}
-                </Text>
+              <SummaryCard title="Spent" value={`₹${totalSpent}`} />
 
-                <Text
-                  style={{
-                    color: COLORS.text,
-                  }}
-                >
-                  ₹{amount}
-                </Text>
-              </View>
-
-              <View
-                style={{
-                  height: 8,
-                  borderRadius: 8,
-                  backgroundColor: "#1F2937",
-                  overflow: "hidden",
-                }}
-              >
-                <View
-                  style={{
-                    width: `${percentage}%`,
-                    height: "100%",
-                    backgroundColor: COLORS.primary,
-                  }}
-                />
-              </View>
+              <SummaryCard title="Txns" value={`${totalTransactions}`} />
             </View>
-          );
-        })}
-        <SavingsProgressCard />
-      </ScrollView>
-      </LinearGradient>
-      <FloatingNav />
-    </View>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 12,
+                marginBottom: 12,
+              }}
+            >
+              <SummaryCard title="Avg Txn" value={`₹${averageTransaction}`} />
+
+              <SummaryCard title="Top Cat" value={topCategory} />
+            </View>
+            <CategoryBarChart labels={chartLabels} data={chartData} />
+
+            <View
+              style={{
+                backgroundColor: COLORS.card,
+                padding: 20,
+                borderRadius: 20,
+                marginBottom: 24,
+              }}
+            >
+              <Text
+                style={{
+                  color: COLORS.textSecondary,
+                  marginBottom: 8,
+                }}
+              >
+                Top Merchant
+              </Text>
+
+              <Text
+                style={{
+                  color: COLORS.text,
+                  fontSize: 24,
+                  fontWeight: "700",
+                }}
+              >
+                {topMerchant}
+              </Text>
+            </View>
+            <Text
+              style={{
+                color: COLORS.text,
+                fontSize: 22,
+                fontWeight: "700",
+                marginBottom: 16,
+              }}
+            >
+              Category Breakdown
+            </Text>
+            {sortedCategories.map(([category, amount]) => {
+              const percentage =
+                totalSpent === 0 ? 0 : (amount / totalSpent) * 100;
+
+              return (
+                <View
+                  key={category}
+                  style={{
+                    backgroundColor: COLORS.card,
+                    padding: 16,
+                    borderRadius: 16,
+                    marginBottom: 12,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginBottom: 12,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: COLORS.text,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {category}
+                    </Text>
+
+                    <Text
+                      style={{
+                        color: COLORS.text,
+                      }}
+                    >
+                      ₹{amount}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      height: 8,
+                      borderRadius: 8,
+                      backgroundColor: "#1F2937",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: `${percentage}%`,
+                        height: "100%",
+                        backgroundColor: COLORS.primary,
+                      }}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+            <SavingsProgressCard />
+          </ScrollView>
+        </LinearGradient>
+        <FloatingNav />
+      </View>
+    </ProtectedRoute>
   );
 }

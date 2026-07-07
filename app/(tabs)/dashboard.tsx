@@ -1,42 +1,32 @@
-import { useOnBoardingStore } from "@/store/useOnBoardingStore";
-import { getDailyBudget } from "@/utils/getDailyBudget";
-import {
-  ScrollView,
-  View,
-  Text,
-  Pressable,
-  Alert,
-  AccessibilityInfo,
-} from "react-native";
-import { COLORS } from "@/constants/colors";
-import StatCard from "@/components/cards/StatCard";
-import { getRemainingBudget } from "@/utils/getRemainingBudget";
-import { useDashboardStore } from "@/store/useDashboardStore";
 import PrimaryButton from "@/components/buttons/PrimaryButton";
-import BudgetGauge from "@/components/dashboard/BudgetGauge";
-import SemiBudgetGauge from "@/components/dashboard/SemiCircularGauge";
-import TransactionCard from "@/components/cards/TransactionCard";
 import SummaryCard from "@/components/cards/SummaryCard";
+import TransactionCard from "@/components/cards/TransactionCard";
 import FloatingNav from "@/components/common/FloatingNav";
-import { useEffect, useState } from "react";
-import DangerZoneModal from "@/components/modals/DangerZoneModal";
-import { getEffectiveBudget } from "@/utils/getEffectiveBudget";
-import { getOverSpentAmount } from "@/utils/overSpentAmount";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
-import InsightCard from "@/components/dashboard/InsightCard";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
 import CategorySummary from "@/components/dashboard/CategorySummary";
+import InsightCard from "@/components/dashboard/InsightCard";
 import SavingsProgressCard from "@/components/dashboard/SavingsProgressCard";
-import { sendLocalNotification } from "@/utils/notifications";
-import { LinearGradient } from "expo-linear-gradient";
-import { Feather } from "@expo/vector-icons";
+import SemiBudgetGauge from "@/components/dashboard/SemiCircularGauge";
+import DangerZoneModal from "@/components/modals/DangerZoneModal";
+import { COLORS } from "@/constants/colors";
+import { syncUserData } from "@/services/syncService";
+import { resetUserProfile } from "@/services/userService";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useDashboardStore } from "@/store/useDashboardStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { useOnBoardingStore } from "@/store/useOnBoardingStore";
+import { useTransactionStore } from "@/store/useTransactionStore";
+import { getDailyBudget } from "@/utils/getDailyBudget";
+import { getEffectiveBudget } from "@/utils/getEffectiveBudget";
+import { getRemainingBudget } from "@/utils/getRemainingBudget";
+import { sendLocalNotification } from "@/utils/notifications";
+import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function Dashboard() {
   const {
@@ -59,8 +49,6 @@ export default function Dashboard() {
   const {
     todaysSpend,
     rollover,
-    addTransaction,
-    transactions,
     debtCarryForward,
     addDebt,
     simulateNextDay,
@@ -70,6 +58,8 @@ export default function Dashboard() {
     addMonthlySavings,
     checkAndAdvanceMonth,
   } = useDashboardStore();
+
+  const { transactions, addTransaction } = useTransactionStore();
 
   const effectiveBudget = getEffectiveBudget(
     dailyBudget,
@@ -165,7 +155,7 @@ export default function Dashboard() {
 
         read: false,
 
-        type: "debt",
+        type: "danger",
       });
     }
   };
@@ -173,7 +163,7 @@ export default function Dashboard() {
   const handleResetApp = () => {
     Alert.alert(
       "Reset BudgeIt",
-      "This will delete all onboarding and transaction data.",
+      "This will permanently erase your budgeting data and restart onboarding. Your account will remain logged in.",
       [
         {
           text: "Cancel",
@@ -183,144 +173,173 @@ export default function Dashboard() {
           text: "Reset",
           style: "destructive",
           onPress: async () => {
-            hasCompletedOnboarding: false;
-            await AsyncStorage.clear();
+            try {
+              const user = useAuthStore.getState().user;
 
-            router.replace("/onboarding/welcome");
+              if (!user) {
+                return;
+              }
+
+              // Reset cloud profile
+              await resetUserProfile(user.uid);
+
+              // Reset local stores
+              useOnBoardingStore.getState().clearOnboarding();
+
+              useDashboardStore.getState().resetDashboard();
+
+              useTransactionStore.getState().clearTransactions();
+
+              useNotificationStore.getState().clearNotifications();
+
+              router.replace("/onboarding/welcome");
+            } catch (error) {
+              console.log(error);
+
+              Alert.alert("Reset Failed", "Unable to reset your account.");
+            }
           },
         },
       ],
     );
   };
+  const profileLoaded = useAuthStore((state) => state.profileLoaded);
 
   useEffect(() => {
-    checkAndAdvanceDay(dailyBudget);
-  }, []);
+    if (!profileLoaded) {
+      return;
+    }
 
-  useEffect(() => {
+    console.log("Running checkAndAdvanceDay with budget:", dailyBudget);
+
     checkAndAdvanceMonth();
-
     checkAndAdvanceDay(dailyBudget);
-  }, []);
+  }, [profileLoaded, dailyBudget]);
 
   return (
-    <View style={{ flex: 1 }}>
-      <LinearGradient
-        colors={["#09090B", "#0B1115", "#09090B"]}
-        locations={[0, 0.5, 1]}
-        style={{
-          flex: 1,
-        }}
-      >
-        <ScrollView
+    <ProtectedRoute>
+      <View style={{ flex: 1 }}>
+        <LinearGradient
+          colors={["#09090B", "#0B1115", "#09090B"]}
+          locations={[0, 0.5, 1]}
           style={{
             flex: 1,
           }}
-          contentContainerStyle={{
-            padding: 24,
-            paddingBottom: 120,
-          }}
-          showsVerticalScrollIndicator={false}
         >
-          <View
+          <ScrollView
             style={{
-              marginTop: 28,
-              marginBottom: 24,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
+              flex: 1,
             }}
+            contentContainerStyle={{
+              padding: 24,
+              paddingBottom: 120,
+            }}
+            showsVerticalScrollIndicator={false}
           >
-            <View>
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: COLORS.textSecondary,
-                  letterSpacing: 1,
-                }}
-              >
-                WELCOME
-              </Text>
-
-              <Text
-                style={{
-                  fontSize: 32,
-                  fontWeight: "800",
-                  color: COLORS.text,
-                  marginTop: 4,
-                }}
-              >
-                {fullName}
-              </Text>
-            </View>
-
-            <Pressable
-              onPress={handleResetApp}
+            <View
               style={{
-                width: 42,
-                height: 42,
-                borderRadius: 21,
-
-                backgroundColor: COLORS.card,
-
-                borderWidth: 1,
-                borderColor: COLORS.border,
-
-                justifyContent: "center",
+                marginTop: 28,
+                marginBottom: 24,
+                flexDirection: "row",
+                justifyContent: "space-between",
                 alignItems: "center",
               }}
             >
-              <Feather name="trash-2" size={18} color={COLORS.textSecondary} />
-            </Pressable>
-          </View>
-          <SemiBudgetGauge
-            remaining={remaining}
-            spent={todaysSpend}
-            dailyBudget={gaugeBudget}
-          />
-          <InsightCard
-            remaining={remaining}
-            dailyBudget={effectiveBudget}
-            debtCarryForward={debtCarryForward}
-          />
+              <View>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: COLORS.textSecondary,
+                    letterSpacing: 1,
+                  }}
+                >
+                  WELCOME
+                </Text>
 
-          {/* <SummaryCard title="Saved" value={`₹${monthlySavings}`} /> */}
+                <Text
+                  style={{
+                    fontSize: 32,
+                    fontWeight: "800",
+                    color: COLORS.text,
+                    marginTop: 4,
+                  }}
+                >
+                  {fullName}
+                </Text>
+              </View>
 
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 12,
-              marginBottom: 24,
-              marginTop: 14,
-            }}
-          >
-            <SummaryCard
-              title="Today's Spend"
-              value={`₹${todaysSpend}`}
-              accentColor="blue"
+              <Pressable
+                onPress={handleResetApp}
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 21,
+
+                  backgroundColor: COLORS.card,
+
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Feather
+                  name="trash-2"
+                  size={18}
+                  color={COLORS.textSecondary}
+                />
+              </Pressable>
+            </View>
+            <SemiBudgetGauge
+              remaining={remaining}
+              spent={todaysSpend}
+              dailyBudget={gaugeBudget}
+            />
+            <InsightCard
+              remaining={remaining}
+              dailyBudget={effectiveBudget}
+              debtCarryForward={debtCarryForward}
             />
 
-            <SummaryCard
-              title="Rollover"
-              value={`₹${rollover}`}
-              accentColor="green"
-            />
-            <SummaryCard
-              title="Debt"
-              value={`₹${debtCarryForward}`}
-              accentColor="red"
-            />
-          </View>
-          <SavingsProgressCard />
-          <AddTransactionModal
-            visible={addExpenseVisible}
-            onClose={() => setAddExpenseVisible(false)}
-            onSubmit={(merchant, amount, category) => {
-              handleTransactionAttempt(amount, merchant, category);
-            }}
-          />
+            {/* <SummaryCard title="Saved" value={`₹${monthlySavings}`} /> */}
 
-          {/*<PrimaryButton
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 12,
+                marginBottom: 24,
+                marginTop: 14,
+              }}
+            >
+              <SummaryCard
+                title="Today's Spend"
+                value={`₹${todaysSpend}`}
+                accentColor="blue"
+              />
+
+              <SummaryCard
+                title="Rollover"
+                value={`₹${rollover}`}
+                accentColor="green"
+              />
+              <SummaryCard
+                title="Debt"
+                value={`₹${debtCarryForward}`}
+                accentColor="red"
+              />
+            </View>
+            <SavingsProgressCard />
+            <PrimaryButton title="Sync Now" onPress={syncUserData} />
+            <AddTransactionModal
+              visible={addExpenseVisible}
+              onClose={() => setAddExpenseVisible(false)}
+              onSubmit={(merchant, amount, category) => {
+                handleTransactionAttempt(amount, merchant, category);
+              }}
+            />
+
+            {/*<PrimaryButton
           title="Add 100"
           onPress={() =>
             handleTransactionAttempt(100,"Food","Food")
@@ -339,7 +358,7 @@ export default function Dashboard() {
           }
         /> */}
 
-          {/* <PrimaryButton
+            {/* <PrimaryButton
           title="Test Savings"
           onPress={() => addMonthlySavings(500)}
         />
@@ -351,68 +370,68 @@ export default function Dashboard() {
             })
           }
         /> */}
-          {/* <PrimaryButton
+            {/* <PrimaryButton
           title="Test Notification"
           onPress={() =>
             sendLocalNotification("BudgeIt", "Notification system works!")
           }
         /> */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 16,
-            }}
-          >
-            <Text
+            <View
               style={{
-                color: COLORS.text,
-                fontSize: 22,
-                fontWeight: "800",
-                letterSpacing: -0.5,
-                marginBottom: 1,
-                marginTop: 12,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
               }}
             >
-              Recent Transactions
-            </Text>
-            <Pressable onPress={() => router.push("/(tabs)/transactions")}>
               <Text
                 style={{
-                  color: COLORS.primary,
-                  fontWeight: "700",
-                  top: 9,
+                  color: COLORS.text,
+                  fontSize: 22,
+                  fontWeight: "800",
+                  letterSpacing: -0.5,
+                  marginBottom: 1,
+                  marginTop: 12,
                 }}
               >
-                View All
+                Recent Transactions
               </Text>
-            </Pressable>
-          </View>
+              <Pressable onPress={() => router.push("/(tabs)/transactions")}>
+                <Text
+                  style={{
+                    color: COLORS.primary,
+                    fontWeight: "700",
+                    top: 9,
+                  }}
+                >
+                  View All
+                </Text>
+              </Pressable>
+            </View>
 
-          {transactions.length === 0 ? (
-            <Text
-              style={{
-                color: COLORS.textSecondary,
-              }}
-            >
-              No transactions yet
-            </Text>
-          ) : (
-            transactions
-              .slice(0, 5)
-              .map((transaction) => (
-                <TransactionCard
-                  key={transaction.id}
-                  id={transaction.id}
-                  merchant={transaction.merchant}
-                  amount={transaction.amount}
-                  category={transaction.category}
-                  timestamp={transaction.timestamp}
-                />
-              ))
-          )}
-          {/* <Animated.View style={fabStyle}>
+            {transactions.length === 0 ? (
+              <Text
+                style={{
+                  color: COLORS.textSecondary,
+                }}
+              >
+                No transactions yet
+              </Text>
+            ) : (
+              transactions
+                .slice(0, 5)
+                .map((transaction) => (
+                  <TransactionCard
+                    key={transaction.id}
+                    id={transaction.id}
+                    merchant={transaction.merchant}
+                    amount={transaction.amount}
+                    category={transaction.category}
+                    timestamp={transaction.timestamp}
+                  />
+                ))
+            )}
+            {/* <Animated.View style={fabStyle}>
           <PrimaryButton
             onPress={() => {
               setAddExpenseVisible(true);
@@ -421,54 +440,55 @@ export default function Dashboard() {
           />
         </Animated.View> */}
 
-          <CategorySummary />
+            <CategorySummary />
 
-          <DangerZoneModal
-            visible={dangerVisible}
-            transactionAmount={pendingTransaction?.amount ?? 0}
-            remainingBudget={remaining}
-            dailyBudget={dailyBudget}
-            onBorrowTomorrow={() => {
-              if (!pendingTransaction) return;
-              const overspent = Math.max(
-                pendingTransaction.amount - remaining,
-                0,
-              );
+            <DangerZoneModal
+              visible={dangerVisible}
+              transactionAmount={pendingTransaction?.amount ?? 0}
+              remainingBudget={remaining}
+              dailyBudget={dailyBudget}
+              onBorrowTomorrow={() => {
+                if (!pendingTransaction) return;
+                const overspent = Math.max(
+                  pendingTransaction.amount - remaining,
+                  0,
+                );
 
-              addDebt(overspent);
-              const reducedTomorrow = dailyBudget - overspent;
-              sendLocalNotification(
-                "⚠️ Budget Borrowed",
-                `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
-              );
-              addNotification({
-                id: Date.now().toString(),
-                title: "Debt Created",
-                message: `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
-                timestamp: Date.now(),
-                read: false,
-                type: "debt",
-              });
+                addDebt(overspent);
+                const reducedTomorrow = dailyBudget - overspent;
+                sendLocalNotification(
+                  "⚠️ Budget Borrowed",
+                  `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
+                );
+                addNotification({
+                  id: Date.now().toString(),
+                  title: "Debt Created",
+                  message: `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
+                  timestamp: Date.now(),
+                  read: false,
+                  type: "danger",
+                });
 
-              addTransaction({
-                id: Date.now().toString(),
-                merchant: pendingTransaction?.merchant ?? "Unknown",
-                amount: pendingTransaction?.amount ?? 0,
-                category: pendingTransaction?.category ?? "Unknown",
-                timestamp: Date.now(),
-                debtCreated: overspent,
-              });
-              setPendingTransaction(null);
-              setDangerVisible(false);
-            }}
-            onCancel={() => {
-              setPendingTransaction(null);
-              setDangerVisible(false);
-            }}
-          />
-        </ScrollView>
-      </LinearGradient>
-      <FloatingNav onAddTransaction={() => setAddExpenseVisible(true)} />
-    </View>
+                addTransaction({
+                  id: Date.now().toString(),
+                  merchant: pendingTransaction?.merchant ?? "Unknown",
+                  amount: pendingTransaction?.amount ?? 0,
+                  category: pendingTransaction?.category ?? "Unknown",
+                  timestamp: Date.now(),
+                  debtCreated: overspent,
+                });
+                setPendingTransaction(null);
+                setDangerVisible(false);
+              }}
+              onCancel={() => {
+                setPendingTransaction(null);
+                setDangerVisible(false);
+              }}
+            />
+          </ScrollView>
+        </LinearGradient>
+        <FloatingNav onAddTransaction={() => setAddExpenseVisible(true)} />
+      </View>
+    </ProtectedRoute>
   );
 }
