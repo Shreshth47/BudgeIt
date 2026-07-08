@@ -308,53 +308,6 @@ export default function Dashboard() {
                 accentColor="red"
               />
             </View>
-            <SavingsProgressCard />
-
-            <AddTransactionModal
-              visible={addExpenseVisible}
-              onClose={() => setAddExpenseVisible(false)}
-              onSubmit={(merchant, amount, category) => {
-                handleTransactionAttempt(amount, merchant, category);
-              }}
-            />
-
-            {/*<PrimaryButton
-          title="Add 100"
-          onPress={() =>
-            handleTransactionAttempt(100,"Food","Food")
-          }
-        />
-        {/*<PrimaryButton
-          title="Add 1000"
-          onPress={() =>
-            handleTransactionAttempt(1000)
-          }
-        />
-        <PrimaryButton
-          title="Test Danger Zone"
-          onPress={() =>
-            setDangerVisible(true)
-          }
-        /> */}
-
-            {/* <PrimaryButton
-          title="Test Savings"
-          onPress={() => addMonthlySavings(500)}
-        />
-        <PrimaryButton
-          title="Test Month Change"
-          onPress={() =>
-            useDashboardStore.setState({
-              lastActiveMonth: "2025-01",
-            })
-          }
-        /> */}
-            {/* <PrimaryButton
-          title="Test Notification"
-          onPress={() =>
-            sendLocalNotification("BudgeIt", "Notification system works!")
-          }
-        /> */}
             <View
               style={{
                 flexDirection: "row",
@@ -410,6 +363,54 @@ export default function Dashboard() {
                   />
                 ))
             )}
+            <SavingsProgressCard />
+
+            <AddTransactionModal
+              visible={addExpenseVisible}
+              onClose={() => setAddExpenseVisible(false)}
+              onSubmit={(merchant, amount, category) => {
+                handleTransactionAttempt(amount, merchant, category);
+              }}
+            />
+
+            {/*<PrimaryButton
+          title="Add 100"
+          onPress={() =>
+            handleTransactionAttempt(100,"Food","Food")
+          }
+        />
+        {/*<PrimaryButton
+          title="Add 1000"
+          onPress={() =>
+            handleTransactionAttempt(1000)
+          }
+        />
+        <PrimaryButton
+          title="Test Danger Zone"
+          onPress={() =>
+            setDangerVisible(true)
+          }
+        /> */}
+
+            {/* <PrimaryButton
+          title="Test Savings"
+          onPress={() => addMonthlySavings(500)}
+        />
+        <PrimaryButton
+          title="Test Month Change"
+          onPress={() =>
+            useDashboardStore.setState({
+              lastActiveMonth: "2025-01",
+            })
+          }
+        /> */}
+            {/* <PrimaryButton
+          title="Test Notification"
+          onPress={() =>
+            sendLocalNotification("BudgeIt", "Notification system works!")
+          }
+        /> */}
+
             {/* <Animated.View style={fabStyle}>
           <PrimaryButton
             onPress={() => {

@@ -47,7 +47,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            animation: "slide_from_right",
+            animation: "slide_from_bottom",
           }}
         />
       </LinearGradient>

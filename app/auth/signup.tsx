@@ -1,47 +1,43 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { COLORS } from "@/constants/colors";
-import { signUp } from "@/services/authService";
+import { logout, signUp } from "@/services/authService";
 import { createUserDocument } from "@/services/userService";
+import { Feather } from "@expo/vector-icons";
 
 export default function SignupScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert(
-        "Missing Information",
-        "Please fill all the fields."
-      );
+      Alert.alert("Missing Information", "Please fill all the fields.");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert(
-        "Password Mismatch",
-        "Passwords do not match."
-      );
+      Alert.alert("Password Mismatch", "Passwords do not match.");
       return;
     }
 
     if (password.length < 6) {
       Alert.alert(
         "Weak Password",
-        "Password must contain at least 6 characters."
+        "Password must contain at least 6 characters.",
       );
       return;
     }
@@ -49,10 +45,7 @@ export default function SignupScreen() {
     try {
       setLoading(true);
 
-      const user = await signUp(
-        email.trim(),
-        password
-      );
+      const user = await signUp(email.trim(), password);
 
       await createUserDocument({
         uid: user.uid,
@@ -62,6 +55,8 @@ export default function SignupScreen() {
         dateOfBirth: "",
         currency: "INR",
         upiId: "",
+        profilePhoto: "",
+        bio: "",
 
         currentBalance: 0,
         monthlyIncome: 0,
@@ -79,12 +74,14 @@ export default function SignupScreen() {
         updatedAt: Date.now(),
       });
 
-      router.replace("/onboarding/welcome");
+      router.replace({
+        pathname: "/auth/verifyEmail",
+        params: {
+          email: user.email ?? "",
+        },
+      });
     } catch (error: any) {
-      Alert.alert(
-        "Signup Failed",
-        error.message
-      );
+      Alert.alert("Signup Failed", error.message);
     } finally {
       setLoading(false);
     }
@@ -136,30 +133,45 @@ export default function SignupScreen() {
           marginBottom: 16,
         }}
       />
-
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor={COLORS.textSecondary}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
+      <View
         style={{
           backgroundColor: COLORS.card,
-          color: COLORS.text,
           borderRadius: 16,
-          padding: 18,
           borderWidth: 1,
           borderColor: COLORS.border,
-          marginBottom: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 18,
+          marginBottom: 24,
         }}
-      />
+      >
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor={COLORS.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          style={{
+            flex: 1,
+            color: COLORS.text,
+            paddingVertical: 18,
+          }}
+        />
+        <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={10}>
+          <Feather
+            name={showPassword ? "eye" : "eye-off"}
+            size={16}
+            color={COLORS.textSecondary}
+          />
+        </Pressable>
+      </View>
 
       <TextInput
         placeholder="Confirm Password"
         placeholderTextColor={COLORS.textSecondary}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        secureTextEntry
+        secureTextEntry={!showPassword}
         style={{
           backgroundColor: COLORS.card,
           color: COLORS.text,

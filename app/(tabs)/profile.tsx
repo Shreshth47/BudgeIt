@@ -361,7 +361,7 @@ export default function Profile() {
 
               <Text
                 style={{
-                  color: COLORS.text,
+                  color: COLORS.success,
                   fontSize: 46,
                   fontWeight: "800",
                   marginTop: 8,
