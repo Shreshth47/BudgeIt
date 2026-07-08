@@ -157,7 +157,16 @@ export default function SignupScreen() {
             paddingVertical: 18,
           }}
         />
-        <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={10}>
+        <Pressable
+          onPress={() => setShowPassword(!showPassword)}
+          hitSlop={10}
+          style={{
+            width: 36,
+            height: 36,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <Feather
             name={showPassword ? "eye" : "eye-off"}
             size={16}
