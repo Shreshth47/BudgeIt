@@ -13,6 +13,10 @@ export interface UserDocument {
 
   dateOfBirth: string;
 
+  profilePhoto: string;
+
+  bio: string;
+
   currency: string;
 
   upiId: string;

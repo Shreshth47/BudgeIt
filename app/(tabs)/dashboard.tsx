@@ -1,4 +1,4 @@
-import PrimaryButton from "@/components/buttons/PrimaryButton";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import SummaryCard from "@/components/cards/SummaryCard";
 import TransactionCard from "@/components/cards/TransactionCard";
 import FloatingNav from "@/components/common/FloatingNav";
@@ -10,7 +10,6 @@ import SemiBudgetGauge from "@/components/dashboard/SemiCircularGauge";
 import DangerZoneModal from "@/components/modals/DangerZoneModal";
 import { COLORS } from "@/constants/colors";
 import { syncUserData } from "@/services/syncService";
-import { resetUserProfile } from "@/services/userService";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
@@ -24,9 +23,12 @@ import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 export default function Dashboard() {
   const {
@@ -84,6 +86,24 @@ export default function Dashboard() {
   const [addExpenseVisible, setAddExpenseVisible] = useState(false);
 
   const scale = useSharedValue(1);
+  const rotation = useSharedValue(0);
+  const refreshAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        rotate: `${rotation.value}deg`,
+      },
+    ],
+  }));
+  const handleSync = async () => {
+    rotation.value = 0;
+
+    rotation.value = withTiming(-360, {
+      duration: 1000,
+    });
+
+    await syncUserData();
+  };
+
   const fabStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -160,49 +180,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleResetApp = () => {
-    Alert.alert(
-      "Reset BudgeIt",
-      "This will permanently erase your budgeting data and restart onboarding. Your account will remain logged in.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Reset",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const user = useAuthStore.getState().user;
-
-              if (!user) {
-                return;
-              }
-
-              // Reset cloud profile
-              await resetUserProfile(user.uid);
-
-              // Reset local stores
-              useOnBoardingStore.getState().clearOnboarding();
-
-              useDashboardStore.getState().resetDashboard();
-
-              useTransactionStore.getState().clearTransactions();
-
-              useNotificationStore.getState().clearNotifications();
-
-              router.replace("/onboarding/welcome");
-            } catch (error) {
-              console.log(error);
-
-              Alert.alert("Reset Failed", "Unable to reset your account.");
-            }
-          },
-        },
-      ],
-    );
-  };
   const profileLoaded = useAuthStore((state) => state.profileLoaded);
 
   useEffect(() => {
@@ -269,10 +246,10 @@ export default function Dashboard() {
               </View>
 
               <Pressable
-                onPress={handleResetApp}
+                onPress={handleSync}
                 style={{
-                  width: 42,
-                  height: 42,
+                  width: 26,
+                  height: 26,
                   borderRadius: 21,
 
                   backgroundColor: COLORS.card,
@@ -284,11 +261,13 @@ export default function Dashboard() {
                   alignItems: "center",
                 }}
               >
-                <Feather
-                  name="trash-2"
-                  size={18}
-                  color={COLORS.textSecondary}
-                />
+                <Animated.View style={refreshAnimatedStyle}>
+                  <Feather
+                    name="refresh-ccw"
+                    size={12}
+                    color={COLORS.textSecondary}
+                  />
+                </Animated.View>
               </Pressable>
             </View>
             <SemiBudgetGauge
@@ -329,53 +308,6 @@ export default function Dashboard() {
                 accentColor="red"
               />
             </View>
-            <SavingsProgressCard />
-            <PrimaryButton title="Sync Now" onPress={syncUserData} />
-            <AddTransactionModal
-              visible={addExpenseVisible}
-              onClose={() => setAddExpenseVisible(false)}
-              onSubmit={(merchant, amount, category) => {
-                handleTransactionAttempt(amount, merchant, category);
-              }}
-            />
-
-            {/*<PrimaryButton
-          title="Add 100"
-          onPress={() =>
-            handleTransactionAttempt(100,"Food","Food")
-          }
-        />
-        {/*<PrimaryButton
-          title="Add 1000"
-          onPress={() =>
-            handleTransactionAttempt(1000)
-          }
-        />
-        <PrimaryButton
-          title="Test Danger Zone"
-          onPress={() =>
-            setDangerVisible(true)
-          }
-        /> */}
-
-            {/* <PrimaryButton
-          title="Test Savings"
-          onPress={() => addMonthlySavings(500)}
-        />
-        <PrimaryButton
-          title="Test Month Change"
-          onPress={() =>
-            useDashboardStore.setState({
-              lastActiveMonth: "2025-01",
-            })
-          }
-        /> */}
-            {/* <PrimaryButton
-          title="Test Notification"
-          onPress={() =>
-            sendLocalNotification("BudgeIt", "Notification system works!")
-          }
-        /> */}
             <View
               style={{
                 flexDirection: "row",
@@ -431,6 +363,54 @@ export default function Dashboard() {
                   />
                 ))
             )}
+            <SavingsProgressCard />
+
+            <AddTransactionModal
+              visible={addExpenseVisible}
+              onClose={() => setAddExpenseVisible(false)}
+              onSubmit={(merchant, amount, category) => {
+                handleTransactionAttempt(amount, merchant, category);
+              }}
+            />
+
+            {/*<PrimaryButton
+          title="Add 100"
+          onPress={() =>
+            handleTransactionAttempt(100,"Food","Food")
+          }
+        />
+        {/*<PrimaryButton
+          title="Add 1000"
+          onPress={() =>
+            handleTransactionAttempt(1000)
+          }
+        />
+        <PrimaryButton
+          title="Test Danger Zone"
+          onPress={() =>
+            setDangerVisible(true)
+          }
+        /> */}
+
+            {/* <PrimaryButton
+          title="Test Savings"
+          onPress={() => addMonthlySavings(500)}
+        />
+        <PrimaryButton
+          title="Test Month Change"
+          onPress={() =>
+            useDashboardStore.setState({
+              lastActiveMonth: "2025-01",
+            })
+          }
+        /> */}
+            {/* <PrimaryButton
+          title="Test Notification"
+          onPress={() =>
+            sendLocalNotification("BudgeIt", "Notification system works!")
+          }
+        /> */}
+
             {/* <Animated.View style={fabStyle}>
           <PrimaryButton
             onPress={() => {
@@ -441,6 +421,7 @@ export default function Dashboard() {
         </Animated.View> */}
 
             <CategorySummary />
+            {/* <PrimaryButton title="Sync Now" onPress={syncUserData} /> */}
 
             <DangerZoneModal
               visible={dangerVisible}

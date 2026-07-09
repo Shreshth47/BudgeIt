@@ -9,6 +9,7 @@ import { uploadProfile } from "./profileService";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
 import { uploadNotifications } from "./notificationService";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { Alert } from "react-native";
 
 export async function syncUserData() {
   const user = useAuthStore.getState().user;

@@ -108,7 +108,7 @@ export default function SemiBudgetGauge({
           style={[
             {
               color: "white",
-              fontSize: 50,
+              fontSize: 47,
               fontWeight: "800",
               marginTop: -60,
               textShadowColor: remaining > 0 ? COLORS.primary : "#EF4444",

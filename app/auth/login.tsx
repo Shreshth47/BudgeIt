@@ -8,6 +8,8 @@ import { TextInput, Pressable, Alert, ActivityIndicator } from "react-native";
 import { signIn } from "@/services/authService";
 import { router } from "expo-router";
 import { hasCompletedOnboarding } from "@/services/userService";
+import { resetPassword } from "@/services/authService";
+import { Feather } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -15,6 +17,26 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert("Enter Email", "Please enter your email first.");
+      return;
+    }
+
+    try {
+      await resetPassword(email);
+
+      Alert.alert(
+        "Reset Email Sent",
+        "A password reset link has been sent to your email. Please check your spam folder.",
+      );
+    } catch (error: any) {
+      Alert.alert("Reset Failed", error.message);
+    }
+  };
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert(
@@ -89,22 +111,64 @@ export default function LoginScreen() {
           marginBottom: 16,
         }}
       />
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor={COLORS.textSecondary}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
+      <View
         style={{
           backgroundColor: COLORS.card,
-          color: COLORS.text,
           borderRadius: 16,
-          padding: 18,
           borderWidth: 1,
           borderColor: COLORS.border,
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 18,
           marginBottom: 24,
         }}
-      />
+      >
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor={COLORS.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          style={{
+            flex: 1,
+            color: COLORS.text,
+            paddingVertical: 18,
+          }}
+        />
+
+        <Pressable
+          onPress={() => setShowPassword(!showPassword)}
+          hitSlop={10}
+          style={{
+            width: 36,
+            height: 36,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Feather
+            name={showPassword ? "eye" : "eye-off"}
+            size={16}
+            color={COLORS.textSecondary}
+          />
+        </Pressable>
+      </View>
+      <Pressable
+        onPress={handleForgotPassword}
+        style={{
+          alignSelf: "flex-end",
+          marginBottom: 24,
+        }}
+      >
+        <Text
+          style={{
+            color: COLORS.primary,
+            fontWeight: "600",
+          }}
+        >
+          Forgot Password?
+        </Text>
+      </Pressable>
       <Pressable
         onPress={handleLogin}
         disabled={loading}
