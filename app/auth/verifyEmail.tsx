@@ -73,7 +73,7 @@ export default function VerifyEmail() {
           lineHeight: 24,
         }}
       >
-        Please check you Spam folder.
+        Please check your Spam folder.
       </Text>
 
       {/* <Pressable
