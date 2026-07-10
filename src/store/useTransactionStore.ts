@@ -3,6 +3,8 @@ import { useDashboardStore } from "./useDashboardStore";
 import { isToday } from "@/utils/isToday";
 import { Transaction } from "@/types/Transaction";
 import { useSyncStore } from "./useSyncStore";
+import { useOnBoardingStore } from "./useOnBoardingStore";
+import { getDailyBudget } from "@/utils/getDailyBudget";
 
 interface TransactionState {
   transactions: Transaction[];
@@ -49,18 +51,18 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       transactions: state.transactions.filter((t) => t.id !== id),
     }));
 
+    const onboarding = useOnBoardingStore.getState();
+    const baseDailyBudget = getDailyBudget(
+      onboarding.monthlyIncome + onboarding.secondaryIncome,
+      onboarding.fixedExpenses,
+      onboarding.savingsTarget,
+    );
+
     useSyncStore.getState().markTransactionsDirty();
 
     useSyncStore.getState().markDashboardDirty();
 
-    useDashboardStore.setState((state) => ({
-      todaysSpend: state.todaysSpend - tx.amount,
-
-      debtCarryForward: Math.max(
-        state.debtCarryForward - (tx.debtCreated ?? 0),
-        0,
-      ),
-    }));
+    useDashboardStore.getState().refreshTodaysBudget(baseDailyBudget);
   },
 
   setTransactions: (transactions) =>

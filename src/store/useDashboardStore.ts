@@ -1,13 +1,13 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DashboardDocument } from "@/types/Dashboard";
+import { getRemainingBudget } from "@/utils/getRemainingBudget";
 import { isToday } from "@/utils/isToday";
 import { sendLocalNotification } from "@/utils/notifications";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { useNotificationStore } from "./useNotificationStore";
-import { getRemainingBudget } from "@/utils/getRemainingBudget";
-import { useTransactionStore } from "./useTransactionStore";
 import { useSyncStore } from "./useSyncStore";
-import { DashboardDocument } from "@/types/Dashboard";
+import { useTransactionStore } from "./useTransactionStore";
 
 interface DashboardState {
   todaysSpend: number;
@@ -20,6 +20,8 @@ interface DashboardState {
   monthlySavings: number;
 
   lastActiveMonth: string;
+
+  refreshTodaysBudget: (baseDailyBudget: number) => void;
 
   clearDashboardLocal: () => void;
 
@@ -50,6 +52,29 @@ export const useDashboardStore = create<DashboardState>()(
       monthlySavings: 0,
 
       lastActiveMonth: `${new Date().getFullYear()}-${new Date().getMonth() + 1}`,
+
+      refreshTodaysBudget: (baseDailyBudget) => {
+        const transactions = useTransactionStore.getState().transactions;
+
+        const todaysSpend = transactions
+          .filter((tx) => isToday(tx.timestamp))
+          .reduce((sum, tx) => sum + tx.amount, 0);
+
+        set((state) => {
+          // Budget available at the start of the day
+          const effectiveBudget = Math.max(baseDailyBudget + state.rollover, 0);
+
+          // Freshly calculate debt from today's spend
+          const debtCarryForward = Math.max(todaysSpend - effectiveBudget, 0);
+
+          return {
+            todaysSpend,
+            debtCarryForward,
+          };
+        });
+
+        useSyncStore.getState().markDashboardDirty();
+      },
 
       clearDashboardLocal: () => {
         set({
@@ -161,7 +186,7 @@ export const useDashboardStore = create<DashboardState>()(
           console.log("remainingDebt:", remainingDebt);
           sendLocalNotification(
             "☀️ New Day Started",
-            `Today's allowance is ₹${remaining}`,
+            `Today's allowance is ₹${effectiveBudget}`,
           );
           addNotification({
             id: Date.now().toString(),
