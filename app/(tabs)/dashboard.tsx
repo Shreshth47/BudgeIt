@@ -434,12 +434,15 @@ export default function Dashboard() {
                   pendingTransaction.amount - remaining,
                   0,
                 );
+                const totalDebt = useDashboardStore.getState().debtCarryForward;
+
+                const tomorrowAllowance = Math.max(dailyBudget - totalDebt, 0);
 
                 addDebt(overspent);
                 const reducedTomorrow = dailyBudget - overspent;
                 sendLocalNotification(
                   "⚠️ Budget Borrowed",
-                  `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
+                  `₹${totalDebt} will be deducted from tomorrow. Tomorrow's allowance: ₹${tomorrowAllowance}.`,
                 );
                 addNotification({
                   id: Date.now().toString(),
