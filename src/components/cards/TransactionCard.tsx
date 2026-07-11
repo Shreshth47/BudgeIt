@@ -127,8 +127,9 @@ export default function TransactionCard({
         style={{
           color: COLORS.danger,
           fontWeight: "800",
-          fontSize: 22,
+          fontSize: 17,
           paddingTop: 22,
+          marginLeft: 4
         }}
       >
         -₹{amount}

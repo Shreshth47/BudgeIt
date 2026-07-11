@@ -29,10 +29,19 @@ export default function SyncProvider() {
       return;
     }
 
-    const { profileDirty, dashboardDirty, transactionsDirty } =
-      useSyncStore.getState();
+    const {
+      profileDirty,
+      dashboardDirty,
+      transactionsDirty,
+      notificationsDirty,
+    } = useSyncStore.getState();
 
-    if (profileDirty || dashboardDirty || transactionsDirty) {
+    if (
+      profileDirty ||
+      dashboardDirty ||
+      transactionsDirty ||
+      notificationsDirty
+    ) {
       console.log("Pending changes found. Syncing...");
 
       syncUserData();

@@ -8,6 +8,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { useNotificationStore } from "./useNotificationStore";
 import { useSyncStore } from "./useSyncStore";
 import { useTransactionStore } from "./useTransactionStore";
+import { getEffectiveBudget } from "@/utils/getEffectiveBudget";
 
 interface DashboardState {
   todaysSpend: number;
@@ -30,8 +31,6 @@ interface DashboardState {
   checkAndAdvanceMonth: () => void;
 
   addMonthlySavings: (amount: number) => void;
-
-  addDebt: (amount: number) => void;
 
   resetDashboard: () => void;
 
@@ -140,14 +139,7 @@ export const useDashboardStore = create<DashboardState>()(
 
       debtCarryForward: 0,
 
-      addDebt: (amount) => {
-        set((state) => ({
-          debtCarryForward: state.debtCarryForward + amount,
-        }));
-
-        useSyncStore.getState().markDashboardDirty();
-      },
-
+      
       checkAndAdvanceDay: (baseDailyBudget) => {
         (set((state) => {
           const today = new Date().toLocaleDateString("en-CA");
@@ -168,30 +160,31 @@ export const useDashboardStore = create<DashboardState>()(
             0,
           );
 
-          const addNotification =
-            useNotificationStore.getState().addNotification;
-          const remaining = getRemainingBudget(
-            effectiveBudget,
-            state.todaysSpend,
-            0,
+          const tomorrowAllowance = getEffectiveBudget(
+            baseDailyBudget,
+            unused,
+            remainingDebt,
           );
 
-          console.log("BEFORE");
-          console.log("todaysSpend:", state.todaysSpend);
-          console.log("rollover:", state.rollover);
-          console.log("debt:", state.debtCarryForward);
+          const addNotification =
+            useNotificationStore.getState().addNotification;
 
-          console.log("AFTER");
-          console.log("unused:", unused);
-          console.log("remainingDebt:", remainingDebt);
+          // console.log("BEFORE");
+          // console.log("todaysSpend:", state.todaysSpend);
+          // console.log("rollover:", state.rollover);
+          // console.log("debt:", state.debtCarryForward);
+
+          // console.log("AFTER");
+          // console.log("unused:", unused);
+          // console.log("remainingDebt:", remainingDebt);
           sendLocalNotification(
             "☀️ New Day Started",
-            `Today's allowance is ₹${effectiveBudget}`,
+            `Today's allowance is ₹${tomorrowAllowance}.`,
           );
           addNotification({
             id: Date.now().toString(),
             title: "New Day Started",
-            message: `Today's allowance is ₹${remaining}.`,
+            message: `Today's allowance is ₹${tomorrowAllowance}.`,
             timestamp: Date.now(),
             read: false,
             type: "success",
