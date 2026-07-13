@@ -1,8 +1,8 @@
 import { COLORS } from "@/constants/colors";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, Text, View } from "react-native";
-import { useNotificationStore } from "@/store/useNotificationStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Props {
@@ -38,12 +38,9 @@ export default function FloatingNav({ onAddTransaction }: Props) {
 
         paddingBottom: insets.bottom,
 
-        height: 76 + insets.bottom,
+        height: 58 + insets.bottom,
 
-        backgroundColor: COLORS.card,
-
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        backgroundColor: "#2f2f33",
 
         borderTopWidth: 0.7,
         borderTopColor: "rgba(8,145,178,0.35)",

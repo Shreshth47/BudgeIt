@@ -29,6 +29,8 @@ import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Feather } from "@expo/vector-icons";
 import EditBioModal from "@/components/profile/EditBioModal";
+import { getRemainingBudget } from "@/utils/getRemainingBudget";
+import { getEffectiveBudget } from "@/utils/getEffectiveBudget";
 
 export default function Profile() {
   const {
@@ -134,6 +136,19 @@ export default function Profile() {
     fixedExpenses,
     savingsTarget,
   );
+
+  const {
+    todaysSpend,
+    rollover,
+  } = useDashboardStore();
+
+  const effectiveBudget = getEffectiveBudget(
+    dailyBudget,
+    rollover,
+    debtCarryForward,
+  );
+
+  const remaining = getRemainingBudget(effectiveBudget, todaysSpend, 0);
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -457,7 +472,7 @@ export default function Profile() {
                     fontSize: 12,
                   }}
                 >
-                  SAVINGS
+                  Today's Allowance Left
                 </Text>
 
                 <Text
@@ -468,7 +483,7 @@ export default function Profile() {
                     marginTop: 10,
                   }}
                 >
-                  ₹{monthlySavings}
+                  ₹{remaining}
                 </Text>
               </View>
 
