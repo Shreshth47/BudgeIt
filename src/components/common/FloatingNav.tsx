@@ -1,8 +1,9 @@
 import { COLORS } from "@/constants/colors";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, Text, View } from "react-native";
-import { useNotificationStore } from "@/store/useNotificationStore";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Props {
   onAddTransaction?: () => void;
@@ -21,6 +22,8 @@ export default function FloatingNav({ onAddTransaction }: Props) {
 
   const isNotification = pathname.includes("notifications");
 
+  const insets = useSafeAreaInsets();
+
   const unreadCount = useNotificationStore(
     (state) => state.notifications.filter((n) => !n.read).length,
   );
@@ -28,25 +31,31 @@ export default function FloatingNav({ onAddTransaction }: Props) {
     <View
       style={{
         position: "absolute",
-        bottom: 0.1,
-        left: 1,
-        right: 1,
-        height: 74,
-        backgroundColor: COLORS.card,
-        borderTopLeftRadius: 4,
-        borderTopRightRadius: 4,
-        borderBottomRightRadius: 52,
-        borderBottomLeftRadius: 52,
-        borderWidth: 1,
+
+        left: 0,
+        right: 0,
+        bottom: 0,
+
+        paddingBottom: insets.bottom,
+
+        height: 58 + insets.bottom,
+
+        backgroundColor: "#2f2f33",
+
+        borderTopWidth: 0.7,
+        borderTopColor: "rgba(8,145,178,0.35)",
         borderColor: "#065465",
+
         flexDirection: "row",
         justifyContent: "space-around",
         alignItems: "center",
+
         paddingHorizontal: 20,
-        shadowColor: "#000",
-        shadowOpacity: 0.25,
-        shadowRadius: 20,
-        elevation: 10,
+
+        shadowColor: COLORS.primary,
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 12,
       }}
     >
       <Pressable onPress={() => router.push("/reports")}>
@@ -108,7 +117,7 @@ export default function FloatingNav({ onAddTransaction }: Props) {
         }}
         style={{
           position: "absolute",
-          top: -24,
+          top: -28,
           alignSelf: "center",
           width: 64,
           height: 64,

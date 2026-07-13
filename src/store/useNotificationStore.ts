@@ -65,7 +65,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       deleteNotificationFromCloud(user.uid, id).catch(console.error);
     }
   },
-  markAsRead: (id) =>
+  markAsRead: (id) => {
     set((state) => ({
       notifications: state.notifications.map((notification) =>
         notification.id === id
@@ -75,12 +75,18 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             }
           : notification,
       ),
-    })),
-  markAllAsRead: () =>
+    }));
+
+    useSyncStore.getState().markNotificationsDirty();
+  },
+  markAllAsRead: () => {
     set((state) => ({
       notifications: state.notifications.map((notification) => ({
         ...notification,
         read: true,
       })),
-    })),
+    }));
+
+    useSyncStore.getState().markNotificationsDirty();
+  },
 }));

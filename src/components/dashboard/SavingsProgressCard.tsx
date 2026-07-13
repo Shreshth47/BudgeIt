@@ -3,6 +3,12 @@ import { View, Text } from "react-native";
 import { COLORS } from "@/constants/colors";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOnBoardingStore } from "@/store/useOnBoardingStore";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
+import { useEffect } from "react";
 
 export default function SavingsProgressCard() {
   const savingsTarget = useOnBoardingStore((state) => state.savingsTarget);
@@ -17,6 +23,18 @@ export default function SavingsProgressCard() {
     savingsTarget === 0
       ? 0
       : Math.min((projectedSavings / savingsTarget) * 100, 100);
+
+  const progress = useSharedValue(percentage);
+
+  useEffect(() => {
+    progress.value = withTiming(percentage, {
+      duration: 700,
+    });
+  }, [percentage]);
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progress.value}%`,
+  }));
 
   return (
     <View
@@ -99,40 +117,53 @@ export default function SavingsProgressCard() {
           </Text>
         </View>
       </View>
-      {/* <View
+      <View
         style={{
-          height: 14,
+          height: 12,
           backgroundColor: "#1F2937",
           borderRadius: 999,
           overflow: "hidden",
+          marginBottom: 18,
         }}
       >
-        <View
-          style={{
-            width: `${percentage}%`,
-            height: "100%",
-            backgroundColor: COLORS.primary,
-            borderRadius: 999,
-          }}
+        <Animated.View
+          style={[
+            {
+              height: "100%",
+              backgroundColor: COLORS.primary,
+              borderRadius: 999,
+            },
+            progressStyle,
+          ]}
         />
-      </View> */}
+      </View>
 
       <View
         style={{
-          backgroundColor: "rgba(14,165,164,0.15)",
-          paddingHorizontal: 10,
-          paddingVertical: 5,
-          borderRadius: 999,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <Text
+
+
+        <View
           style={{
-            color: COLORS.primary,
-            fontWeight: "700",
+            backgroundColor: "rgba(14,165,164,0.15)",
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderRadius: 999,
           }}
         >
-          {Math.round(percentage)}%
-        </Text>
+          <Text
+            style={{
+              color: COLORS.primary,
+              fontWeight: "700",
+            }}
+          >
+            {Math.round(percentage)}%
+          </Text>
+        </View>
       </View>
     </View>
   );

@@ -52,7 +52,6 @@ export default function Dashboard() {
     todaysSpend,
     rollover,
     debtCarryForward,
-    addDebt,
     simulateNextDay,
     checkAndAdvanceDay,
     lastActiveDate,
@@ -434,22 +433,6 @@ export default function Dashboard() {
                   pendingTransaction.amount - remaining,
                   0,
                 );
-
-                addDebt(overspent);
-                const reducedTomorrow = dailyBudget - overspent;
-                sendLocalNotification(
-                  "⚠️ Budget Borrowed",
-                  `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
-                );
-                addNotification({
-                  id: Date.now().toString(),
-                  title: "Debt Created",
-                  message: `₹${overspent} borrowed. Tomorrow's allowance will reduce to ₹${Math.max(reducedTomorrow, 0)}.`,
-                  timestamp: Date.now(),
-                  read: false,
-                  type: "danger",
-                });
-
                 addTransaction({
                   id: Date.now().toString(),
                   merchant: pendingTransaction?.merchant ?? "Unknown",
@@ -457,6 +440,36 @@ export default function Dashboard() {
                   category: pendingTransaction?.category ?? "Unknown",
                   timestamp: Date.now(),
                   debtCreated: overspent,
+                });
+                // Refresh dashboard based on the new transaction
+                useDashboardStore
+                  .getState()
+                  .refreshTodaysBudget(dailyBudget);
+
+                // Read the UPDATED debt
+                const totalDebt = useDashboardStore.getState().debtCarryForward;
+
+                // Calculate tomorrow's allowance
+                const tomorrowAllowance = Math.max(
+                  dailyBudget - totalDebt,
+                  0,
+                );
+
+                // Common message
+                const message = `₹${totalDebt} will be deducted from tomorrow. Tomorrow's allowance: ₹${tomorrowAllowance}.`;
+
+                sendLocalNotification(
+                  "⚠️ Budget Borrowed",
+                  message,
+                );
+
+                addNotification({
+                  id: Date.now().toString(),
+                  title: "Debt Created",
+                  message,
+                  timestamp: Date.now(),
+                  read: false,
+                  type: "danger",
                 });
                 setPendingTransaction(null);
                 setDangerVisible(false);
