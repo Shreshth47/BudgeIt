@@ -1,5 +1,4 @@
 import { User } from "firebase/auth";
-
 import { getUserDocument } from "@/services/userService";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
@@ -12,11 +11,11 @@ import { initializeNotifications } from "./startupNotificationService";
 export async function initializeUser(user: User) {
   try {
     // Always clear local state before loading a user's data
-    useOnBoardingStore.getState().clearOnboarding();
+    // useOnBoardingStore.getState().clearOnboarding();
 
-    useDashboardStore.getState().clearDashboardLocal();
+    // useDashboardStore.getState().clearDashboardLocal();
 
-    useNotificationStore.getState().clearNotifications();
+    // useNotificationStore.getState().clearNotifications();
     const profile = await getUserDocument(user.uid);
 
     if (!profile) {
@@ -24,6 +23,12 @@ export async function initializeUser(user: User) {
 
       return;
     }
+
+    useOnBoardingStore.getState().clearOnboarding();
+
+    useDashboardStore.getState().clearDashboardLocal();
+
+    useNotificationStore.getState().clearNotifications();
 
     const onboarding = useOnBoardingStore.getState();
 
@@ -65,6 +70,7 @@ export async function initializeUser(user: User) {
     useAuthStore.getState().setProfileLoaded(true);
   } catch (error) {
     console.log("Startup Error:", error);
+    console.log("Offline mode: using persisted local data");
 
     useAuthStore.getState().setProfileLoaded(true);
   }

@@ -10,19 +10,27 @@ export default function SyncProvider() {
 
   const profileLoaded = useAuthStore((state) => state.profileLoaded);
   useEffect(() => {
-    const interval = setInterval(async () => {
-      const state = await Network.getNetworkStateAsync();
+    let wasOnline = true;
+
+    const subscription = Network.addNetworkStateListener((state) => {
+      const online =
+        !!state.isConnected &&
+        !!state.isInternetReachable;
 
       if (
-        state.isConnected &&
-        state.isInternetReachable &&
+        online &&
+        !wasOnline &&
         useAuthStore.getState().profileLoaded
       ) {
+        console.log("🌐 Internet restored");
+
         syncUserData();
       }
-    }, 15000);
 
-    return () => clearInterval(interval);
+      wasOnline = online;
+    });
+
+    return () => subscription.remove();
   }, []);
   useEffect(() => {
     if (!user || !profileLoaded) {

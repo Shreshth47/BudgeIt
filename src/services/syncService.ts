@@ -26,6 +26,7 @@ export async function syncUserData() {
   } = useSyncStore.getState();
 
   console.log("========== SYNC ==========");
+  console.log(useSyncStore.getState());
   console.log("Profile:", profileDirty);
   console.log("Dashboard:", dashboardDirty);
   console.log("Transactions:", transactionsDirty);

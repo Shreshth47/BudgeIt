@@ -2,27 +2,27 @@ import { User } from "firebase/auth";
 
 import { downloadTransactions } from "./transactionService";
 import { useTransactionStore } from "@/store/useTransactionStore";
+import { useSyncStore } from "@/store/useSyncStore";
 
-export async function initializeTransactions(
-  user: User
-) {
+export async function initializeTransactions(user: User) {
   try {
-    const transactions =
-      await downloadTransactions(user.uid);
+    const { transactionsDirty } = useSyncStore.getState();
 
-    useTransactionStore
-      .getState()
-      .setTransactions(transactions);
+    // Local transactions are newer than cloud.
+    // Never overwrite pending offline changes.
+    if (transactionsDirty) {
+      console.log(
+        "Skipping cloud transaction download (pending local changes).",
+      );
+      return;
+    }
 
-    console.log(
-      "Loaded",
-      transactions.length,
-      "transactions"
-    );
+    const transactions = await downloadTransactions(user.uid);
+
+    useTransactionStore.getState().setTransactions(transactions);
+
+    console.log("Loaded", transactions.length, "transactions");
   } catch (error) {
-    console.log(
-      "Transaction Startup Error",
-      error
-    );
+    console.log("Transaction Startup Error", error);
   }
 }
