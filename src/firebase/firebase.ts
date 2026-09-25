@@ -6,12 +6,12 @@ import { initializeAuth } from "firebase/auth";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBMJkR6uRcNvXHhIry88qwTl62WF6cW_nU",
-  authDomain: "budge-it-746dd.firebaseapp.com",
-  projectId: "budge-it-746dd",
-  storageBucket: "budge-it-746dd.firebasestorage.app",
-  messagingSenderId: "1076967991575",
-  appId: "1:1076967991575:web:3c76dc307c9be447696f52",
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+  projectId: "YOUR_FIREBASE_PROJECT_ID",
+  storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET_ID",
+  messagingSenderId: "YOUR_FIREBASE_MESSAGE_ID",
+  appId: "YOUR_FIREBASE_APP_ID",
 };
 
 
